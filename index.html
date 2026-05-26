@@ -1,0 +1,4881 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>皇佳國際物業 智能服務網</title>
+  <!--
+    本專案首要 prompt：
+    整體風格採簡約高級風，用戶會以約 8 吋平板操作，且預設為年長者，UI/UX 需以簡單、清楚、易點擊、低認知負擔為最高優先。
+  -->
+  <style>
+    :root {
+      --bg: #f4f1eb;
+      --bg-deep: #ece7de;
+      --surface: rgba(255, 255, 255, 0.96);
+      --surface-strong: #ffffff;
+      --surface-muted: #f7f4ee;
+      --ink: #1f2933;
+      --ink-soft: #61707f;
+      --line: rgba(86, 103, 120, 0.16);
+      --line-strong: rgba(86, 103, 120, 0.3);
+      --primary: #275d57;
+      --primary-dark: #1c4540;
+      --primary-soft: #e6efec;
+      --accent: #b58a4d;
+      --danger-soft: #fee5e6;
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+      --shadow: 0 24px 60px rgba(33, 43, 54, 0.12);
+      --shadow-soft: 0 12px 28px rgba(33, 43, 54, 0.08);
+      --touch-lg: 60px;
+      --touch-md: 52px;
+      --font-base: 17px;
+      --font-lg: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "SF Pro TC", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      font-size: var(--font-base);
+      line-height: 1.6;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(39, 93, 87, 0.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(181, 138, 77, 0.08), transparent 24%),
+        linear-gradient(180deg, #faf8f4 0%, var(--bg) 48%, var(--bg-deep) 100%);
+      min-height: 100vh;
+    }
+    button, input, select, textarea { font: inherit; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      min-height: 84px;
+      background: rgba(28, 37, 46, 0.92);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(22px);
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .header-brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    header h1 {
+      font-size: 24px;
+      line-height: 1.15;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    .header-subtitle {
+      color: rgba(226, 238, 246, 0.72);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .menu-btn {
+      display: none;
+      min-width: 48px;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+    }
+    .page-title-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .clean-bed-dashboard-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .clean-bed-dashboard-actions .field {
+      min-width: 220px;
+    }
+    select, input, textarea {
+      width: 100%;
+      min-height: var(--touch-md);
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.98);
+      color: var(--ink);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: rgba(15, 118, 110, 0.46);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+    }
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 84px);
+      position: relative;
+    }
+    .sidebar-scrim {
+      position: fixed;
+      inset: 84px 0 0;
+      background: rgba(8, 19, 32, 0.46);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+      z-index: 39;
+    }
+    .sidebar-scrim.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    aside {
+      width: 308px;
+      padding: 24px 18px 28px;
+      background: rgba(255, 255, 255, 0.82);
+      border-right: 1px solid rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(24px);
+      box-shadow: 16px 0 42px rgba(18, 36, 56, 0.06);
+      overflow-y: auto;
+    }
+    aside h2 {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin: 12px 0 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .nav-group + .nav-group {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(101, 126, 149, 0.12);
+    }
+    .nav-item {
+      min-height: var(--touch-md);
+      padding: 14px 16px;
+      border-radius: 18px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      border: 1px solid rgba(0, 0, 0, 0);
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+    .nav-item.active,
+    .nav-item:hover {
+      background: linear-gradient(135deg, rgba(39, 93, 87, 0.12), rgba(255, 255, 255, 0.92));
+      color: var(--primary-dark);
+      border-color: rgba(39, 93, 87, 0.18);
+      transform: translateX(2px);
+    }
+    main {
+      flex: 1;
+      padding: 32px 30px 36px;
+      min-width: 0;
+    }
+    section {
+      animation: fadeIn 0.24s ease;
+    }
+    .page-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+    .page-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 3vw, 38px);
+      letter-spacing: 0.02em;
+      line-height: 1.18;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      min-height: var(--touch-md);
+      border-radius: 18px;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, #3d766f 100%);
+      color: white;
+      box-shadow: 0 14px 28px rgba(39, 93, 87, 0.18);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    .btn:hover,
+    .page-btn:hover:not(:disabled),
+    .option-remove:hover {
+      transform: translateY(-1px);
+    }
+    .btn.secondary {
+      background: linear-gradient(135deg, #697786 0%, #8692a0 100%);
+      box-shadow: 0 12px 24px rgba(91, 108, 126, 0.18);
+    }
+    .btn.light {
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+      box-shadow: none;
+      border: 1px solid var(--line);
+    }
+    .btn.light.is-active {
+      background: var(--primary-soft);
+      border-color: rgba(39, 93, 87, 0.26);
+      color: var(--primary-dark);
+      box-shadow: 0 10px 20px rgba(39, 93, 87, 0.1);
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 245, 240, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -46px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(39, 93, 87, 0.08), transparent 72%);
+      pointer-events: none;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+    .card .label {
+      color: var(--ink-soft);
+      font-size: 16px;
+      letter-spacing: 0.03em;
+    }
+    .card .number {
+      font-size: clamp(38px, 5vw, 48px);
+      font-weight: 800;
+      margin-top: 12px;
+      color: var(--ink);
+    }
+    .room-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .room-summary-pill {
+      width: 100%;
+      min-height: 88px;
+      padding: 18px 22px;
+      border: 1px solid rgba(106, 118, 131, 0.14);
+      border-radius: 30px;
+      background: linear-gradient(180deg, #dfdfdf 0%, #d8d8d8 100%);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(33, 43, 54, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .room-summary-pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 30px rgba(33, 43, 54, 0.12);
+    }
+    .room-summary-pill.expanded {
+      border-color: rgba(39, 93, 87, 0.28);
+      box-shadow: 0 18px 34px rgba(39, 93, 87, 0.12);
+    }
+    .room-summary-pill.pending-highlight {
+      border-color: rgba(244, 114, 182, 0.78);
+      box-shadow:
+        0 0 0 4px rgba(251, 207, 232, 0.92),
+        0 18px 30px rgba(244, 114, 182, 0.18);
+    }
+    .room-summary-number {
+      font-size: clamp(40px, 4vw, 56px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      margin-left: auto;
+    }
+    .room-signal-group {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 72px;
+    }
+    .room-signal {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(24, 50, 71, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      flex-shrink: 0;
+    }
+    .room-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 220px;
+    }
+    .room-card::after {
+      inset: auto -30px -42px auto;
+      width: 110px;
+      height: 110px;
+    }
+    .room-detail-card {
+      margin-top: 2px;
+    }
+    .room-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .room-card-header:hover .room-number {
+      color: var(--primary-dark);
+    }
+    .room-number {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+    .room-number-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(39, 93, 87, 0.22);
+      color: var(--primary-dark);
+      box-shadow: 0 10px 18px rgba(33, 43, 54, 0.08);
+    }
+    .room-subtitle {
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+    .room-card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .clear-bed-filter-bar {
+      margin: 18px 0 20px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .clear-bed-stats-panel {
+      margin: 18px 0 20px;
+    }
+    .clear-bed-stats-toolbar {
+      margin: 0 0 14px;
+      align-items: center;
+    }
+    .clear-bed-stats-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .clear-bed-stats-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .clear-bed-add-room-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      background: rgba(255, 255, 255, 0.92);
+    }
+    .clear-bed-add-room-btn:hover {
+      border-color: rgba(39, 93, 87, 0.24);
+      color: var(--primary-dark);
+    }
+    .clear-bed-status-guide {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px 20px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 16px;
+    }
+    .clear-bed-status-guide-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .clear-bed-status-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .clear-bed-status-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(101, 126, 149, 0.16);
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .clear-bed-status-arrow {
+      font-size: 22px;
+      line-height: 1;
+      color: var(--ink-soft);
+      font-weight: 800;
+    }
+    .clear-bed-status-note {
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .clear-bed-filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .status-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(101, 126, 149, 0.16);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .status-filter-btn.active {
+      border-color: rgba(15, 118, 110, 0.28);
+      box-shadow: 0 10px 18px rgba(15, 118, 110, 0.1);
+      transform: translateY(-1px);
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(24, 50, 71, 0.12);
+      flex-shrink: 0;
+    }
+    .room-bed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .bed-chip {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 50px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 700;
+      border: 1px solid rgba(101, 126, 149, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .bed-chip:hover {
+      transform: translateX(2px);
+      box-shadow: 0 10px 18px rgba(19, 44, 68, 0.1);
+    }
+    .bed-chip.is-static {
+      cursor: default;
+    }
+    .bed-chip.is-static:hover {
+      transform: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    .bed-chip.status-occupied,
+    .status-dot.status-occupied,
+    .room-signal.status-occupied { background: #ffffff; }
+    .bed-chip.status-pending-clean,
+    .status-dot.status-pending-clean,
+    .room-signal.status-pending-clean { background: #f98b90; }
+    .bed-chip.status-cleaning,
+    .status-dot.status-cleaning,
+    .room-signal.status-cleaning { background: #58cce7; }
+    .bed-chip.status-empty,
+    .status-dot.status-empty,
+    .room-signal.status-empty { background: #9adf72; }
+    .bed-chip.status-empty {
+      border-color: rgba(101, 126, 149, 0.26);
+    }
+    .bed-code {
+      min-width: 54px;
+    }
+    .bed-status-text {
+      flex: 1;
+    }
+    .room-empty {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px dashed var(--line-strong);
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+    .empty-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 14px;
+      min-height: 220px;
+      border-style: dashed;
+    }
+    .modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      background: rgba(244, 249, 252, 0.92);
+      border: 1px solid rgba(101, 126, 149, 0.14);
+    }
+    .modal-list-item.clickable {
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .modal-list-item.clickable:hover {
+      transform: translateX(2px);
+      box-shadow: 0 10px 18px rgba(19, 44, 68, 0.08);
+    }
+    .modal-list-item strong {
+      font-size: 18px;
+    }
+    .modal-list-item-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .modal-list-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(101, 126, 149, 0.14);
+      font-size: 15px;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    th {
+      background: rgba(244, 241, 235, 0.96);
+      color: var(--ink-soft);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.gray { background: #e5edf4; color: #425468; }
+    .badge.red { background: var(--danger-soft); color: #991b1b; }
+    .badge.blue { background: #dbeafe; color: #1d4ed8; }
+    .field-grid,
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .filter-grid {
+      margin: 18px 0 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+    .filter-panel-heading {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
+    .filter-panel-title {
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .filter-panel-close {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .filter-panel-close:hover,
+    .filter-panel-close:focus {
+      outline: none;
+      border-color: rgba(15, 118, 110, 0.32);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08);
+    }
+    .filter-toggle-actions,
+    .dispatch-history-toolbar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .clean-bed-dashboard-actions .filter-panel-heading {
+      flex: 1 1 100%;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+    .field label {
+      font-size: 15px;
+      color: var(--ink-soft);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .field.full { grid-column: 1 / -1; }
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 17, 29, 0.56);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(14px);
+      z-index: 80;
+    }
+    .modal {
+      width: min(860px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 30px 80px rgba(8, 25, 41, 0.24);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .modal-header h3 { margin: 0; font-size: 28px; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .login-box {
+      max-width: 560px;
+      margin: 84px auto;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 38px;
+      border-radius: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      box-shadow: 0 28px 72px rgba(16, 40, 61, 0.14);
+      backdrop-filter: blur(18px);
+    }
+    .login-box h2 {
+      margin: 0 0 20px;
+      font-size: 34px;
+    }
+    .quick-login {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .hidden { display: none; }
+    body.app-authenticated #loginPage { display: none !important; }
+    body.app-authenticated #app { display: flex !important; }
+    body.logged-out #app { display: none !important; }
+    body.logged-out #loginPage { display: block !important; }
+    .hint {
+      color: var(--ink-soft);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 24px 0 14px;
+      flex-wrap: wrap;
+    }
+    .toolbar h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      grid-column: 1 / -1;
+      flex-wrap: wrap;
+    }
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      margin-top: -2px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-soft);
+    }
+    .pagination {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .page-btn {
+      min-width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .page-btn.active {
+      background: linear-gradient(135deg, var(--primary) 0%, #0ea5e9 100%);
+      border-color: transparent;
+      color: white;
+    }
+    .page-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .option-editor {
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      background: linear-gradient(180deg, rgba(250, 249, 246, 0.96), rgba(244, 241, 235, 0.96));
+      border-radius: 22px;
+      padding: 18px;
+    }
+    .option-editor-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .option-item label {
+      font-size: 15px;
+      color: var(--ink-soft);
+      font-weight: 700;
+      min-width: 60px;
+    }
+    .option-item input { flex: 1; }
+    .option-remove {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink-soft);
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .option-add {
+      margin-top: 12px;
+      width: fit-content;
+    }
+    .stationed-task-section {
+      margin: 8px 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .stationed-task-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+    .stationed-task-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .stationed-task-grid .card {
+      min-height: 0;
+      padding: 20px 18px;
+      border-radius: 24px;
+    }
+    .stationed-task-grid .card .label {
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .stationed-task-grid .card .number {
+      margin-top: 10px;
+      font-size: clamp(30px, 4vw, 40px);
+    }
+    .porter-station-section {
+      margin: 10px 0 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .porter-station-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .porter-station-summary-card {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .porter-station-summary-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .porter-station-summary-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      letter-spacing: 0.04em;
+    }
+    .porter-station-summary-value {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 800;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .porter-station-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .porter-station-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 245, 240, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow-soft);
+    }
+    .porter-station-card.is-summary {
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .porter-station-card.is-summary:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .porter-station-card.is-active {
+      border-color: rgba(39, 93, 87, 0.22);
+      background: linear-gradient(180deg, rgba(241, 248, 246, 0.98) 0%, rgba(248, 245, 240, 0.94) 100%);
+    }
+    .porter-station-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .porter-station-name {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .porter-station-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      min-height: 36px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(101, 126, 149, 0.18);
+      color: var(--ink);
+    }
+    .porter-station-status.is-active {
+      background: rgba(39, 93, 87, 0.12);
+      border-color: rgba(39, 93, 87, 0.22);
+      color: var(--primary-dark);
+    }
+    .porter-station-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .porter-station-expand-note {
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .porter-station-empty {
+      padding: 20px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px dashed var(--line-strong);
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .custom-select {
+      position: relative;
+      width: 100%;
+      min-width: 0;
+    }
+    .custom-select-native {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      min-height: 1px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    .custom-select-button {
+      width: 100%;
+      min-height: var(--touch-md);
+      padding: 14px 48px 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.98);
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      font: inherit;
+      line-height: 1.35;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .custom-select-button::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 18px;
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid var(--ink-soft);
+      border-bottom: 2px solid var(--ink-soft);
+      transform: translateY(-70%) rotate(45deg);
+      pointer-events: none;
+    }
+    .custom-select-button:focus {
+      outline: none;
+      border-color: rgba(15, 118, 110, 0.46);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+    }
+    .custom-select-button[aria-expanded="true"] {
+      border-color: rgba(15, 118, 110, 0.5);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+    }
+    .custom-select-button:disabled {
+      opacity: 0.56;
+      cursor: not-allowed;
+    }
+    .custom-select-value {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .custom-select-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 140;
+      background: transparent;
+    }
+    .custom-select-layer {
+      position: fixed;
+      z-index: 141;
+      overflow: hidden;
+      border: 1px solid rgba(101, 126, 149, 0.22);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 22px 60px rgba(8, 25, 41, 0.22);
+    }
+    .custom-select-title {
+      display: none;
+      padding: 16px 18px 10px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .custom-select-options {
+      max-height: min(320px, 56vh);
+      overflow-y: auto;
+      padding: 6px;
+    }
+    .custom-select-option {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      font: inherit;
+      line-height: 1.35;
+    }
+    .custom-select-option:hover,
+    .custom-select-option:focus {
+      outline: none;
+      background: rgba(15, 118, 110, 0.08);
+    }
+    .custom-select-option.is-selected {
+      background: rgba(15, 118, 110, 0.12);
+      color: var(--primary);
+      font-weight: 800;
+    }
+    .custom-select-option.is-selected::after {
+      content: "✓";
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-weight: 900;
+    }
+    .custom-select-option:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    .coming-soon-panel {
+      padding: 28px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 245, 240, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow-soft);
+    }
+    .coming-soon-panel h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      letter-spacing: 0.02em;
+    }
+    .coming-soon-panel p {
+      margin: 0;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @media (max-width: 1180px) {
+      body.app-authenticated #app {
+        display: block !important;
+      }
+      .menu-btn {
+        display: inline-flex;
+      }
+      .layout {
+        display: block;
+      }
+      aside {
+        position: fixed;
+        top: 84px;
+        left: 0;
+        bottom: 0;
+        width: min(88vw, 360px);
+        z-index: 40;
+        transform: translateX(-108%);
+        transition: transform 0.28s ease;
+      }
+      aside.open {
+        transform: translateX(0);
+      }
+      main {
+        padding: 24px 20px 30px;
+      }
+    }
+    @media (max-width: 900px) {
+      body {
+        font-size: 18px;
+      }
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-stats {
+        grid-template-columns: repeat(var(--stats-columns, 3), minmax(0, 1fr));
+        gap: 12px;
+      }
+      .dashboard-stats .card {
+        padding: 16px 12px;
+        border-radius: 22px;
+      }
+      .dashboard-stats .card .label {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .dashboard-stats .card .number {
+        margin-top: 8px;
+        font-size: clamp(26px, 5vw, 34px);
+      }
+      .clean-bed-dashboard-actions {
+        width: 100%;
+      }
+      .clean-bed-dashboard-actions .field {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+      .clear-bed-stats-toolbar {
+        align-items: flex-start;
+      }
+      .stationed-task-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .porter-station-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      table {
+        min-width: 680px;
+      }
+    }
+    @media (max-width: 760px) {
+      header {
+        min-height: 76px;
+        padding: 14px 16px;
+      }
+      header h1 {
+        font-size: 20px;
+      }
+      .header-subtitle {
+        font-size: 12px;
+      }
+      .page-title {
+        align-items: stretch;
+      }
+      .page-title .btn,
+      .filter-actions .btn,
+      .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .filter-actions,
+      .modal-footer {
+        flex-direction: column;
+      }
+      .login-box {
+        margin: 24px 16px 32px;
+        padding: 26px;
+      }
+      .table-footer {
+        padding: 14px 16px;
+      }
+      .modal-backdrop {
+        padding: 12px;
+      }
+      .modal {
+        padding: 22px 18px;
+        border-radius: 24px;
+      }
+      .dashboard-stats {
+        gap: 10px;
+      }
+      .dashboard-stats .card {
+        padding: 14px 10px;
+        border-radius: 18px;
+      }
+      .dashboard-stats .card .label {
+        font-size: 13px;
+      }
+      .dashboard-stats .card .number {
+        font-size: clamp(22px, 7vw, 30px);
+      }
+      .stationed-task-title {
+        font-size: 20px;
+      }
+      .clear-bed-stats-heading {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .stationed-task-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .stationed-task-grid .card {
+        padding: 14px 10px;
+        border-radius: 18px;
+      }
+      .stationed-task-grid .card .label {
+        font-size: 13px;
+      }
+      .stationed-task-grid .card .number {
+        font-size: clamp(22px, 7vw, 30px);
+      }
+      .porter-station-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .porter-station-card {
+        padding: 16px 14px;
+        border-radius: 20px;
+      }
+      .porter-station-name {
+        font-size: 22px;
+      }
+      .custom-select-backdrop {
+        background: rgba(6, 17, 29, 0.28);
+      }
+      .custom-select-layer {
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        max-height: 72vh;
+        border-radius: 24px 24px 0 0;
+        border-bottom: 0;
+      }
+      .custom-select-title {
+        display: block;
+      }
+      .custom-select-options {
+        max-height: calc(72vh - 54px);
+        padding: 6px 10px 14px;
+      }
+      .custom-select-option {
+        min-height: 54px;
+        padding: 14px 16px;
+      }
+    }
+  </style>
+</head>
+<body class="logged-out">
+  <header>
+    <div class="header-brand">
+      <button id="menuToggleButton" class="menu-btn" type="button" aria-label="功能列表" aria-expanded="false" aria-controls="sidebar">功能列表</button>
+      <div class="header-brand-text">
+        <h1>皇佳國際物業 智能服務網</h1>
+      </div>
+    </div>
+    <div id="headerActions" class="header-actions hidden">
+      <span id="currentSessionLabel" class="hint"></span>
+      <button class="btn secondary" onclick="logout()">登出</button>
+    </div>
+  </header>
+
+  <section id="loginPage" class="login-box">
+    <h2>登入</h2>
+    <div class="field">
+      <label>帳號</label>
+      <input id="loginAccountInput" placeholder="請輸入帳號" />
+    </div>
+    <br />
+    <div class="field">
+      <label>密碼</label>
+      <input id="loginPasswordInput" type="password" placeholder="請輸入密碼" />
+    </div>
+    <br />
+    <button class="btn" style="width:100%" onclick="login()">登入</button>
+    <div class="quick-login">
+      <button class="btn light" onclick="quickLogin('dispatch3')">快速登入：A3病房</button>
+      <button class="btn light" onclick="quickLogin('dispatch5')">快速登入：A5病房</button>
+      <button class="btn light" onclick="quickLogin('cleaner')">快速登入：清床人員</button>
+      <button class="btn light" onclick="quickLogin('porter')">快速登入：接單單位（傳送人員）</button>
+      <button class="btn light" onclick="quickLogin('center')">快速登入：管理單位（傳送中心）</button>
+    </div>
+  </section>
+
+  <div id="app" class="layout hidden">
+    <div id="sidebarScrim" class="sidebar-scrim"></div>
+    <aside id="sidebar">
+      <div id="sidebarNav"></div>
+    </aside>
+
+    <main>
+      <section id="dashboardPage">
+        <div class="page-title">
+          <div>
+            <h2 id="dashboardTitle">派工單位儀表板</h2>
+          </div>
+          <button class="btn" onclick="openModal('dispatchModal')">馬上派工</button>
+        </div>
+        <div class="cards dashboard-stats">
+          <div class="card" onclick="openDispatchStatusModal('已派工')">
+            <div class="label">已派工</div>
+            <div id="dispatchAssignedCount" class="number">0</div>
+          </div>
+          <div class="card" onclick="openDispatchStatusModal('進行中')">
+            <div class="label">進行中</div>
+            <div id="dispatchInProgressCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">5/20 完成</div>
+            <div id="dispatchCompletedCount" class="number">0</div>
+          </div>
+        </div>
+        <div class="stationed-task-section">
+          <div class="stationed-task-title">當前駐點任務數</div>
+          <div class="stationed-task-grid">
+            <div class="card">
+              <div class="label">已派工</div>
+              <div id="dispatchStationedAssignedCount" class="number">0</div>
+            </div>
+            <div class="card">
+              <div class="label">進行中</div>
+              <div id="dispatchStationedInProgressCount" class="number">0</div>
+            </div>
+          </div>
+          <p class="hint">若要查看派工歷史或清床管理，請點擊「功能列表」</p>
+        </div>
+      </section>
+
+      <section id="dispatchHistoryPage" class="hidden">
+        <div class="page-title">
+          <div>
+            <h2>派工歷史紀錄</h2>
+          </div>
+        </div>
+        <div class="toolbar">
+          <h3>歷史派工紀錄</h3>
+          <div class="dispatch-history-toolbar-actions">
+            <span id="dispatchHistorySummary" class="hint">共 0 筆</span>
+            <button id="dispatchHistoryFilterToggle" class="btn light hidden" type="button" data-filter-toggle="dispatchHistoryFilters" onclick="showDispatchHistoryFilters()">篩選</button>
+          </div>
+        </div>
+        <div id="dispatchHistoryFilters" class="filter-grid">
+          <div class="filter-panel-heading">
+            <span class="filter-panel-title">篩選</span>
+            <button class="filter-panel-close" type="button" aria-label="隱藏篩選" title="隱藏篩選" onclick="hideDispatchHistoryFilters()">x</button>
+          </div>
+          <div class="field">
+            <label>日期起</label>
+            <input id="historyDateFrom" type="date" />
+          </div>
+          <div class="field">
+            <label>日期迄</label>
+            <input id="historyDateTo" type="date" />
+          </div>
+          <div class="field">
+            <label>時間起</label>
+            <input id="historyTimeFrom" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>時間迄</label>
+            <input id="historyTimeTo" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>工作項目</label>
+            <select id="historyWorkItem"></select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select id="historyStatus">
+              <option value="">全部狀態</option>
+              <option value="已派工">已派工</option>
+              <option value="進行中">進行中</option>
+              <option value="已完成">已完成</option>
+              <option value="已取消">已取消</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>派至</label>
+            <select id="historyAssignee">
+              <option value="">全部派送單位</option>
+              <option value="傳送中心">傳送中心</option>
+              <option value="駐點人員">駐點人員</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input id="historyKeyword" placeholder="單號或工作項目關鍵字" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="applyDispatchHistoryFilters()">查詢</button>
+            <button class="btn light" onclick="resetDispatchHistoryFilters()">清除條件</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>狀態</th>
+                <th>單號</th>
+                <th>日期</th>
+                <th>時間</th>
+                <th>工作項目</th>
+                <th>派至</th>
+                <th>優先級</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="dispatchHistoryTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="dispatchHistoryPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+          <div id="dispatchHistoryPagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <section id="anomalyDashboardPage" class="hidden">
+        <div class="page-title">
+          <h2>異常儀表板</h2>
+        </div>
+        <div class="cards dashboard-stats">
+          <div class="card">
+            <div class="label">異常總數</div>
+            <div id="anomalyTotalCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">待處理</div>
+            <div id="anomalyPendingCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">已結案</div>
+            <div id="anomalyResolvedCount" class="number">0</div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <h3>所有異常紀錄</h3>
+          <span id="anomalySummary" class="hint">共 0 筆</span>
+        </div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>日期</label>
+            <input id="anomalyDateFilter" type="date" />
+          </div>
+          <div class="field">
+            <label>異常分類</label>
+            <select id="anomalyCategoryFilter">
+              <option value="">全部分類</option>
+              <option value="人力不足">人力不足</option>
+              <option value="路線受阻">路線受阻</option>
+              <option value="病患狀況變更">病患狀況變更</option>
+              <option value="單據資訊不完整">單據資訊不完整</option>
+              <option value="設備故障">設備故障</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select id="anomalyStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="待處理">待處理</option>
+              <option value="已結案">已結案</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input id="anomalyKeywordFilter" placeholder="單號或備註關鍵字" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="applyAnomalyFilters()">查詢</button>
+            <button class="btn light" onclick="resetAnomalyFilters()">清除條件</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>單號</th>
+                <th>日期</th>
+                <th>時間</th>
+                <th>工作項目</th>
+                <th>異常分類</th>
+                <th>備註</th>
+                <th>狀態</th>
+              </tr>
+            </thead>
+            <tbody id="anomalyTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="anomalyPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+          <div id="anomalyPagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <section id="workItemsPage" class="hidden">
+        <div class="page-title">
+          <div>
+            <h2 id="workItemsPageTitle">工作項目管理</h2>
+            <p id="workItemsPageHint" class="hint">工作項目區分為共用與病房專屬。</p>
+          </div>
+          <button class="btn" onclick="openWorkItemCreate()">新增工作項目</button>
+        </div>
+        <p class="hint">工作項目會影響派工下拉選單、預設派送單位、優先級、是否需要簽收與預估完成時間。</p>
+        <div class="filter-grid">
+          <div class="field">
+            <label>項目代碼</label>
+            <input placeholder="例如 PT-001" />
+          </div>
+          <div class="field">
+            <label>項目名稱</label>
+            <input placeholder="例如 病患送檢查室" />
+          </div>
+          <div class="field">
+            <label>分類</label>
+            <select>
+              <option>全部分類</option>
+              <option>病患傳送</option>
+              <option>檢體傳送</option>
+              <option>血品配送</option>
+              <option>文件傳送</option>
+              <option>物資傳送</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select>
+              <option>全部狀態</option>
+              <option>啟用</option>
+              <option>停用</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>項目代碼</th>
+                <th>項目名稱</th>
+                <th>適用範圍</th>
+                <th>分類</th>
+                <th>預設派至</th>
+                <th>預估時間</th>
+                <th>優先級</th>
+                <th>簽收</th>
+                <th>選項</th>
+                <th>狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="workItemsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="clearBedManagementPage" class="hidden">
+        <div class="page-title">
+          <div>
+            <h2 id="clearBedManagementTitle">清床管理</h2>
+          </div>
+        </div>
+        <div class="clear-bed-status-guide">
+          <div class="clear-bed-status-guide-title">狀態說明</div>
+          <div class="clear-bed-status-flow">
+            <div class="clear-bed-status-step"><span class="status-dot status-occupied"></span><span>住院中</span></div>
+            <span class="clear-bed-status-arrow">→</span>
+            <div class="clear-bed-status-step"><span class="status-dot status-pending-clean"></span><span>待清床</span></div>
+            <span class="clear-bed-status-arrow">→</span>
+            <div class="clear-bed-status-step"><span class="status-dot status-cleaning"></span><span>清床中</span></div>
+            <span class="clear-bed-status-arrow">→</span>
+            <div class="clear-bed-status-step"><span class="status-dot status-empty"></span><span>清床完畢</span></div>
+            <span class="clear-bed-status-arrow">→</span>
+            <div class="clear-bed-status-step"><span class="status-dot status-occupied"></span><span>回到住院中</span></div>
+          </div>
+          <div class="clear-bed-status-note">點一下床位，系統會依這個順序切換狀態。</div>
+        </div>
+        <div class="clear-bed-stats-panel">
+          <div class="toolbar clear-bed-stats-toolbar">
+            <div class="clear-bed-stats-heading">
+              <div class="clear-bed-stats-copy">
+                <h3>當前狀況床數表</h3>
+                <span id="clearBedStatusSummary" class="hint">共 0 間房 / 0 張床</span>
+              </div>
+              <button type="button" class="icon-btn clear-bed-add-room-btn" title="新增房間" aria-label="新增房間" onclick="openClearBedRoomCreate()">+</button>
+            </div>
+          </div>
+          <div class="cards dashboard-stats" style="--stats-columns: 4;">
+            <div class="card">
+              <div class="label">住院中</div>
+              <div id="clearBedOccupiedCount" class="number">0</div>
+            </div>
+            <div class="card">
+              <div class="label">待清床</div>
+              <div id="clearBedPendingCleanCount" class="number">0</div>
+            </div>
+            <div class="card">
+              <div class="label">清床中</div>
+              <div id="clearBedCleaningCount" class="number">0</div>
+            </div>
+            <div class="card">
+              <div class="label">清床完畢</div>
+              <div id="clearBedEmptyCount" class="number">0</div>
+            </div>
+          </div>
+        </div>
+        <div class="clear-bed-filter-bar">
+          <div class="field">
+            <label>狀態（可多選）</label>
+            <div id="clearBedStatusFilters" class="clear-bed-filter-options"></div>
+          </div>
+        </div>
+        <div class="cards" id="clearBedManagementCards"></div>
+      </section>
+
+      <section id="cleanBedDashboardPage" class="hidden">
+        <div class="page-title">
+          <div>
+            <h2 id="cleanBedDashboardTitle">清床儀表板</h2>
+            <p id="cleanBedDashboardHint" class="hint">顯示所有病房的房間與床位狀態。</p>
+          </div>
+          <div class="page-title-actions clean-bed-dashboard-actions">
+            <div class="field">
+              <label>選擇病房</label>
+              <select id="cleanerWardFilter" onchange="applyCleanerWardFilter()">
+                <option value="all">全部</option>
+                <option value="ward3">A3病房</option>
+                <option value="ward5">A5病房</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>顯示內容</label>
+              <select id="cleanerStatusViewFilter" onchange="applyCleanerStatusViewFilter()">
+                <option value="all">全部</option>
+                <option value="pending">待清床</option>
+                <option value="cleaning">清床中</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="cards dashboard-stats" style="--stats-columns: 4;">
+          <div class="card">
+            <div class="label">住院中</div>
+            <div id="cleanBedOccupiedCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">待清床</div>
+            <div id="cleanBedPendingCleanCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">清床中</div>
+            <div id="cleanBedCleaningCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">清床完畢</div>
+            <div id="cleanBedEmptyCount" class="number">0</div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <h3 id="cleanBedDashboardListTitle">所有病房房間卡片</h3>
+          <span id="cleanBedDashboardSummary" class="hint">共 0 間房</span>
+        </div>
+        <div class="cards" id="cleanBedDashboardCards"></div>
+      </section>
+
+      <section id="porterTasksPage" class="hidden">
+        <div class="page-title">
+          <div>
+            <h2>傳送任務儀表板</h2>
+            <p class="hint">可同時選擇多個駐點病房；同一駐點以最後上線的傳送人員為主。</p>
+          </div>
+        </div>
+        <div class="porter-station-section">
+          <div class="stationed-task-title">駐點病房</div>
+          <div id="porterStationSelector" class="porter-station-shell"></div>
+        </div>
+        <div class="cards dashboard-stats">
+          <div class="card">
+            <div class="label">已派工</div>
+            <div id="porterPendingCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">進行中</div>
+            <div id="porterAcceptedCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">待回覆進度詢問</div>
+            <div id="porterInquiryCount" class="number">0</div>
+          </div>
+        </div>
+        <div class="toolbar"><h3>已派工</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>優先級</th><th>來源病房</th><th>工作項目</th><th>時間</th><th>單號</th><th>操作</th></tr></thead>
+            <tbody id="porterPendingTaskTableBody"></tbody>
+          </table>
+        </div>
+        <div class="toolbar"><h3>進行中</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>優先級</th><th>來源病房</th><th>工作項目</th><th>時間</th><th>單號</th><th>操作</th></tr></thead>
+            <tbody id="porterInProgressTaskTableBody"></tbody>
+          </table>
+        </div>
+        <div class="toolbar"><h3>待回覆進度詢問</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>單號</th><th>工作項目</th><th>詢問時間</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="porterInquiryTableBody"></tbody>
+          </table>
+        </div>
+        <div class="toolbar"><h3>本月異常紀錄</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>單號</th><th>異常分類</th><th>備註</th><th>狀態</th></tr></thead>
+            <tbody id="porterAnomalyTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="porterAnomalyRecordsPage" class="hidden">
+        <div class="page-title"><h2>異常紀錄</h2></div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>日期</label>
+            <input id="porterAnomalyDateFilter" type="date" />
+          </div>
+          <div class="field">
+            <label>異常分類</label>
+            <select id="porterAnomalyCategoryFilter">
+              <option value="">全部分類</option>
+              <option value="人力不足">人力不足</option>
+              <option value="路線受阻">路線受阻</option>
+              <option value="病患狀況變更">病患狀況變更</option>
+              <option value="單據資訊不完整">單據資訊不完整</option>
+              <option value="設備故障">設備故障</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select id="porterAnomalyStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="待處理">待處理</option>
+              <option value="已結案">已結案</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input id="porterAnomalyKeywordFilter" placeholder="單號、工作項目或備註" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="applyPorterAnomalyFilters()">查詢</button>
+            <button class="btn light" onclick="resetPorterAnomalyFilters()">清除條件</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>單號</th><th>日期</th><th>時間</th><th>工作項目</th><th>異常分類</th><th>備註</th><th>狀態</th></tr></thead>
+            <tbody id="porterAnomalyRecordsTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="porterAnomalyRecordsPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+          <div id="porterAnomalyRecordsPagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <section id="porterTaskRecordsPage" class="hidden">
+        <div class="page-title"><h2>任務紀錄</h2></div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>日期</label>
+            <input id="porterTaskDateFilter" type="date" />
+          </div>
+          <div class="field">
+            <label>時間起</label>
+            <input id="porterTaskTimeFromFilter" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>時間迄</label>
+            <input id="porterTaskTimeToFilter" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>工作項目</label>
+            <select id="porterTaskWorkItemFilter"></select>
+          </div>
+          <div class="field">
+            <label>來源病房</label>
+            <select id="porterTaskWardFilter">
+              <option value="">全部病房</option>
+              <option value="ward3">A3病房</option>
+              <option value="ward5">A5病房</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select id="porterTaskStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="已派工">已派工</option>
+              <option value="進行中">進行中</option>
+              <option value="已完成">已完成</option>
+              <option value="已取消">已取消</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>執勤員工</label>
+            <select id="porterTaskEmployeeFilter"></select>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input id="porterTaskKeywordFilter" placeholder="單號、工作項目或選項" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="applyPorterTaskFilters()">查詢</button>
+            <button class="btn light" onclick="resetPorterTaskFilters()">清除條件</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>單號</th><th>日期</th><th>時間</th><th>來源病房</th><th>工作項目</th><th>執勤員工</th><th>優先級</th><th>狀態</th></tr></thead>
+            <tbody id="porterTaskRecordsTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="porterTaskRecordsPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+          <div id="porterTaskRecordsPagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <section id="peopleManagementPage" class="hidden">
+        <div class="page-title"><h2>人員管控</h2></div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>搜尋員工</label>
+            <input id="peopleSearchInput" placeholder="姓名、帳號或電話" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="renderPeopleManagement()">查詢</button>
+            <button class="btn light" onclick="resetPeopleSearch()">清除條件</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>姓名</th><th>帳號</th><th>電話</th><th>是否啟用</th><th>執勤狀態</th><th>操作</th></tr></thead>
+            <tbody id="peopleManagementTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="centerTaskDashboardPage" class="hidden">
+        <div class="page-title">
+          <h2 id="centerTaskDashboardTitle">任務儀表板</h2>
+          <button id="centerTaskDashboardBack" class="btn light hidden" onclick="clearEmployeeTaskDashboard()">回全部任務</button>
+        </div>
+        <div class="cards dashboard-stats">
+          <div class="card">
+            <div class="label">即時任務</div>
+            <div id="centerTaskActiveCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">已派工</div>
+            <div id="centerTaskAssignedCount" class="number">0</div>
+          </div>
+          <div class="card">
+            <div class="label">進行中</div>
+            <div id="centerTaskInProgressCount" class="number">0</div>
+          </div>
+        </div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>日期</label>
+            <input id="centerTaskDateFilter" type="date" />
+          </div>
+          <div class="field">
+            <label>時間起</label>
+            <input id="centerTaskTimeFromFilter" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>時間迄</label>
+            <input id="centerTaskTimeToFilter" type="time" step="900" />
+          </div>
+          <div class="field">
+            <label>工作項目</label>
+            <select id="centerTaskWorkItemFilter"></select>
+          </div>
+          <div class="field">
+            <label>來源病房</label>
+            <select id="centerTaskWardFilter">
+              <option value="">全部病房</option>
+              <option value="ward3">A3病房</option>
+              <option value="ward5">A5病房</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>狀態</label>
+            <select id="centerTaskStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="已派工">已派工</option>
+              <option value="進行中">進行中</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>執勤員工</label>
+            <select id="centerTaskEmployeeFilter"></select>
+          </div>
+          <div class="field">
+            <label>關鍵字</label>
+            <input id="centerTaskKeywordFilter" placeholder="單號或工作項目" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn" onclick="applyCenterTaskFilters()">查詢</button>
+            <button class="btn light" onclick="resetCenterTaskFilters()">清除條件</button>
+          </div>
+        </div>
+        <div class="toolbar"><h3>即時任務列表</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>單號</th><th>日期</th><th>來源病房</th><th>時間</th><th>工作項目</th><th>執勤員工</th><th>優先級</th><th>狀態</th><th>異常</th><th>操作</th></tr></thead>
+            <tbody id="centerTaskDashboardTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="centerTaskPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+          <div id="centerTaskPagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <section id="dutyEmployeeManagementPage" class="hidden">
+        <div class="page-title"><h2>執勤員工管理</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>姓名</th><th>即時任務</th><th>進行中</th><th>異常數</th><th>狀態</th><th>操作</th></tr></thead>
+            <tbody id="dutyEmployeeTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="qrCodeManagementPage" class="hidden">
+        <div class="page-title"><h2>各病房單位QR cord</h2></div>
+        <div class="cards">
+          <div class="card">
+            <div class="label">A5病房</div>
+            <img alt="A5病房 QR code" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=WARD-51-CHECKIN" style="width:140px;height:140px;display:block;margin:12px auto 0;" />
+          </div>
+          <div class="card">
+            <div class="label">A3病房</div>
+            <img alt="A3病房 QR code" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=WARD-31-CHECKIN" style="width:140px;height:140px;display:block;margin:12px auto 0;" />
+          </div>
+        </div>
+      </section>
+
+      <section id="environmentInspectionPage" class="hidden">
+        <div class="page-title"><h2>環境巡檢通報系統</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給傳送中心後續建置環境巡檢、異常回報與追蹤流程。</p>
+        </div>
+      </section>
+
+      <section id="serviceSurveyPage" class="hidden">
+        <div class="page-title"><h2>定期服務問卷調查表</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預計以 Google 表單運用，後續可串接問卷連結、填答入口與回收紀錄。</p>
+        </div>
+      </section>
+
+      <section id="robotManagementPage" class="hidden">
+        <div class="page-title"><h2>傳送機器人後台管理系統</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給傳送中心管理機器人狀態、任務派送與設備監控。</p>
+        </div>
+      </section>
+
+      <section id="trainingDatabasePage" class="hidden">
+        <div class="page-title"><h2>教育訓練資料庫</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給教育訓練教材、課程紀錄與查詢管理。</p>
+        </div>
+      </section>
+
+      <section id="hrManagementPage" class="hidden">
+        <div class="page-title"><h2>人事管理系統</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給傳送中心管理人員基本資料、任用資訊與異動紀錄。</p>
+        </div>
+      </section>
+
+      <section id="schedulingSystemPage" class="hidden">
+        <div class="page-title"><h2>排班作業系統</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給排班設定、班表檢視與人力安排作業。</p>
+        </div>
+      </section>
+
+      <section id="payrollSystemPage" class="hidden">
+        <div class="page-title"><h2>薪資作業系統</h2></div>
+        <div class="coming-soon-panel">
+          <h3>開發中</h3>
+          <p class="hint">此功能預留給薪資計算、核對與相關資料查詢。</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="dispatchModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>馬上派工</h3>
+        <button class="btn light" onclick="closeModal('dispatchModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>派至</label>
+          <select id="dispatchAssignee">
+            <option value="傳送中心">傳送中心</option>
+            <option value="駐點人員">駐點人員</option>
+          </select>
+        </div>
+        <div id="dispatchSourceWardField" class="field">
+          <label>來源病房</label>
+          <select id="dispatchSourceWard">
+            <option value="A5">A5</option>
+            <option value="A3">A3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>時間</label>
+          <input id="dispatchScheduledTime" type="time" step="900" />
+          <label><input id="dispatchImmediate" type="checkbox" checked onchange="toggleImmediateDispatch()" /> 立刻</label>
+        </div>
+        <div class="field">
+          <label>優先級</label>
+          <select id="dispatchPriority">
+            <option value="低">低</option>
+            <option value="一般" selected>一般</option>
+            <option value="急件">急件</option>
+            <option value="緊急">緊急</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>工作項目</label>
+          <select id="dispatchWorkItemSelect" onchange="updateDispatchOptionField()"></select>
+        </div>
+        <div id="dispatchOptionField" class="field full hidden">
+          <label>派工選項</label>
+          <select id="dispatchWorkItemOptionSelect"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('dispatchModal')">取消</button>
+        <button class="btn" onclick="createDispatchRecord()">送出派工</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="workItemModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="workItemModalTitle">新增工作項目</h3>
+        <button class="btn light" onclick="closeModal('workItemModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>項目代碼</label>
+          <input id="workItemCode" placeholder="例如 PT-001" />
+        </div>
+        <div class="field">
+          <label>項目名稱</label>
+          <input id="workItemName" placeholder="例如 病患送檢查室" />
+        </div>
+        <div class="field">
+          <label>適用範圍</label>
+          <select id="workItemScope"></select>
+        </div>
+        <div class="field">
+          <label>項目分類</label>
+          <select id="workItemCategory"><option>病患傳送</option><option>檢體傳送</option><option>血品配送</option><option>文件傳送</option><option>物資傳送</option><option>其他</option></select>
+        </div>
+        <div class="field">
+          <label>預設派至</label>
+          <select id="workItemAssignee"><option>傳送中心</option><option>駐點人員</option></select>
+        </div>
+        <div class="field">
+          <label>預估完成時間（分鐘）</label>
+          <input id="workItemEta" type="number" placeholder="例如 30" />
+        </div>
+        <div class="field">
+          <label>優先級</label>
+          <select id="workItemPriority"><option>低</option><option>一般</option><option>急件</option><option>緊急</option></select>
+        </div>
+        <div class="field">
+          <label>是否需要簽收</label>
+          <select id="workItemReceipt"><option>需要</option><option>不需要</option></select>
+        </div>
+        <div class="field full">
+          <label>選項</label>
+          <div class="option-editor">
+            <div class="option-editor-title">選項設置</div>
+            <div id="workItemOptionsList" class="option-list"></div>
+            <button type="button" class="btn option-add" onclick="addWorkItemOptionField()">新增欄位</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>是否啟用</label>
+          <select id="workItemStatus"><option>啟用</option><option>停用</option></select>
+        </div>
+        <div class="field">
+          <label>排序</label>
+          <input id="workItemOrder" type="number" placeholder="數字越小越前面" />
+        </div>
+        <div class="field full">
+          <label>注意事項</label>
+          <textarea id="workItemNotes" rows="3" placeholder="例如：需核對病患姓名、病歷號；血品需雙人覆核。"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('workItemModal')">取消</button>
+        <button class="btn" onclick="saveWorkItem()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="listModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="listModalTitle">派工清單</h3>
+        <button class="btn light" onclick="closeModal('listModal')">關閉</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>工作項目</th><th>派至</th><th>單號</th><th>日期</th><th>時間</th><th>狀態</th><th>操作</th></tr></thead>
+          <tbody id="listModalTableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="listModalPageInfo" class="hint">第 1 頁 / 共 1 頁</span>
+        <div id="listModalPagination" class="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="anomalyModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>異常回報</h3>
+        <button class="btn light" onclick="closeModal('anomalyModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>異常分類</label>
+          <select id="anomalyCategoryInput">
+            <option value="人力不足">人力不足</option>
+            <option value="路線受阻">路線受阻</option>
+            <option value="病患狀況變更">病患狀況變更</option>
+            <option value="單據資訊不完整">單據資訊不完整</option>
+            <option value="設備故障">設備故障</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>備註</label>
+          <textarea id="anomalyNotesInput" rows="3" placeholder="請輸入異常說明"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('anomalyModal')">取消</button>
+        <button class="btn" onclick="submitAnomalyReport()">送出回報</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="replyModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>回覆進度</h3>
+        <button class="btn light" onclick="closeModal('replyModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>回覆內容</label>
+          <textarea id="replyTextInput" rows="3" placeholder="例如：已接觸病房，預計 10 分鐘內完成。"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('replyModal')">取消</button>
+        <button class="btn" onclick="submitProgressReply()">送出回覆</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="porterStationModal" class="modal-backdrop">
+    <div class="modal" style="width:min(720px, 100%);">
+      <div class="modal-header">
+        <h3>選擇駐點病房</h3>
+        <button class="btn light" onclick="closePorterStationModal()">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <p class="hint" style="margin:0;">駐點中的病房會排在最上方，可直接開始或離開駐點。</p>
+        </div>
+      </div>
+      <div id="porterStationModalList" class="porter-station-shell" style="margin-top:18px;"></div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closePorterStationModal()">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="porterStationConfirmModal" class="modal-backdrop">
+    <div class="modal" style="width:min(520px, 100%);">
+      <div class="modal-header">
+        <h3 id="porterStationConfirmTitle">確認駐點調整</h3>
+        <button class="btn light" onclick="closePorterStationConfirmModal()">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <p id="porterStationConfirmText" class="hint" style="margin:0;font-size:18px;color:var(--ink);"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closePorterStationConfirmModal()">取消</button>
+        <button id="porterStationConfirmActionButton" class="btn" onclick="confirmPorterStationAction()">確認</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="assignEmployeeModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>指派執勤員工</h3>
+        <button class="btn light" onclick="closeModal('assignEmployeeModal')">關閉</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>員工</th><th>已派工任務數</th><th>上次完成任務時間</th><th>上次接取新任務時間</th><th>狀態</th><th>操作</th></tr></thead>
+          <tbody id="assignEmployeeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearBedRoomModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="clearBedRoomModalTitle">新增房間</h3>
+        <button class="btn light" onclick="closeModal('clearBedRoomModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>房間號</label>
+          <input id="clearBedRoomNumberInput" placeholder="例如 301" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('clearBedRoomModal')">取消</button>
+        <button class="btn" onclick="saveClearBedRoom()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearBedBedsModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="clearBedBedsModalTitle">房間管理</h3>
+        <button class="btn light" onclick="closeModal('clearBedBedsModal')">關閉</button>
+      </div>
+      <p id="clearBedBedsModalHint" class="hint">可在此查看房間床位狀態。</p>
+      <div id="clearBedBedsDetailCard" class="card room-card room-detail-card"></div>
+      <div class="toolbar">
+        <h3>床位清單</h3>
+        <div id="clearBedBedsToolbarActions" class="room-card-actions"></div>
+      </div>
+      <div id="clearBedBedsList" class="modal-list"></div>
+    </div>
+  </div>
+
+  <div id="clearBedBedModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="clearBedBedModalTitle">新增床號</h3>
+        <button class="btn light" onclick="closeModal('clearBedBedModal')">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>床號</label>
+          <input id="clearBedBedCodeInput" placeholder="例如 301-1 或 1" />
+          <span class="hint">可直接輸入完整床號，或只輸入 1 / 2 / 3，系統會自動補上房號前綴。</span>
+        </div>
+        <div class="field full">
+          <label>狀態</label>
+          <select id="clearBedBedStatusInput">
+            <option value="住院中">住院中</option>
+            <option value="待清床">待清床</option>
+            <option value="清床中">清床中</option>
+            <option value="清床完畢">清床完畢</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeModal('clearBedBedModal')">取消</button>
+        <button class="btn" onclick="saveClearBedBed()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearBedStatusConfirmModal" class="modal-backdrop">
+    <div class="modal" style="width:min(520px, 100%);">
+      <div class="modal-header">
+        <h3>確認變更狀態</h3>
+        <button class="btn light" onclick="closeClearBedStatusConfirmModal()">關閉</button>
+      </div>
+      <div class="field-grid">
+        <div class="field full">
+          <p id="clearBedStatusConfirmText" class="hint" style="margin:0;font-size:18px;color:var(--ink);"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary" onclick="closeClearBedStatusConfirmModal()">取消</button>
+        <button class="btn" onclick="confirmClearBedStatusChange()">確認變更</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'dispatch';
+    let currentDispatchAccountId = 'ward3';
+    const RECORD_DATE = '2026-05-20';
+    const HISTORY_PAGE_SIZE = 20;
+    const LIST_MODAL_PAGE_SIZE = 10;
+    const CENTER_TASK_PAGE_SIZE = 20;
+    let dispatchHistoryPage = 1;
+    let anomalyPage = 1;
+    let listModalPage = 1;
+    let centerTaskPage = 1;
+    let porterAnomalyRecordsPage = 1;
+    let porterTaskRecordsPage = 1;
+    let listModalStatusFilter = '已派工';
+    let selectedRecordId = '';
+    let selectedInquiryId = '';
+    let editingWorkItemCode = '';
+    let selectedEmployeeTaskId = '';
+    let selectedAssignmentRecordId = '';
+    let editingClearBedRoomId = '';
+    let selectedClearBedRoomId = '';
+    let selectedClearBedRoomAccountId = '';
+    let editingClearBedBedIndex = -1;
+    let pendingClearBedStatusChange = null;
+    let pendingPorterStationAction = null;
+    let expandedClearBedRoomId = '';
+    let expandedCleanerRoomId = '';
+    let cleanerWardFilter = 'all';
+    let cleanerStatusView = 'all';
+    const selectedPorterStationAccounts = new Set(['ward3', 'ward5']);
+    const selectedClearBedStatuses = new Set();
+
+    const dispatchAccounts = [
+      { id: 'ward3', name: 'A3病房', wards: ['31', '32'], patientEscortRooms: ['301', '302', '303'] },
+      { id: 'ward5', name: 'A5病房', wards: ['51', '52'], patientEscortRooms: ['501', '502', '503'] }
+    ];
+
+    const clearBedStatuses = [
+      { value: '住院中', className: 'status-occupied' },
+      { value: '待清床', className: 'status-pending-clean' },
+      { value: '清床中', className: 'status-cleaning' },
+      { value: '清床完畢', className: 'status-empty' }
+    ];
+
+    function createSeededRandom(seedLabel) {
+      let seed = 0;
+      Array.from(seedLabel).forEach(char => {
+        seed = ((seed * 31) + char.charCodeAt(0)) >>> 0;
+      });
+      return function nextRandom() {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+    }
+    function createMockClearBedRooms(accountId, startRoomNumber) {
+      const random = createSeededRandom(accountId);
+      const presetStatuses = [
+        ['住院中', '住院中', '清床完畢'],
+        ['待清床', '清床中'],
+        ['住院中'],
+        ['清床完畢', '待清床', '清床中']
+      ];
+      return Array.from({ length: 20 }, (_, roomIndex) => {
+        const roomNumber = String(startRoomNumber + roomIndex);
+        const configuredStatuses = presetStatuses[roomIndex];
+        const bedCount = configuredStatuses ? configuredStatuses.length : 1 + Math.floor(random() * 3);
+        const beds = Array.from({ length: bedCount }, (_, bedIndex) => {
+          const suffix = String(bedIndex + 1);
+          const fallbackStatusIndex = (roomIndex + bedIndex + Math.floor(random() * clearBedStatuses.length)) % clearBedStatuses.length;
+          const status = configuredStatuses ? configuredStatuses[bedIndex] : clearBedStatuses[fallbackStatusIndex].value;
+          return { code: `${roomNumber}-${suffix}`, status };
+        });
+        return {
+          id: `${accountId}-room-${roomNumber}`,
+          roomNumber,
+          beds
+        };
+      });
+    }
+    const clearBedRoomsByAccount = {
+      ward3: createMockClearBedRooms('ward3', 301),
+      ward5: createMockClearBedRooms('ward5', 501)
+    };
+
+    const employees = [
+      { id: 'EMP-001', name: '王小明', account: 'wangxm', phone: '0912-001-001', enabled: true, onDuty: true },
+      { id: 'EMP-002', name: '李雅婷', account: 'liyating', phone: '0912-001-002', enabled: true, onDuty: true },
+      { id: 'EMP-003', name: '陳志豪', account: 'chench', phone: '0912-001-003', enabled: true, onDuty: true },
+      { id: 'EMP-004', name: '林書妤', account: 'linsy', phone: '0912-001-004', enabled: true, onDuty: true },
+      { id: 'EMP-005', name: '黃國鈞', account: 'huanggj', phone: '0912-001-005', enabled: true, onDuty: false },
+      { id: 'EMP-006', name: '張佩珊', account: 'changps', phone: '0912-001-006', enabled: false, onDuty: false }
+    ];
+
+    const workItems = [
+      { code: 'PT-301', name: '病患送檢查室', scope: 'ward', wardAccountId: 'ward3', category: '病患傳送', defaultAssignee: '傳送中心', eta: '30', priority: '一般', receipt: '需要', options: dispatchAccounts[0].patientEscortRooms, status: '啟用', order: '1', notes: '需核對病患身分後再送出。' },
+      { code: 'PT-501', name: '病患送檢查室', scope: 'ward', wardAccountId: 'ward5', category: '病患傳送', defaultAssignee: '傳送中心', eta: '30', priority: '一般', receipt: '需要', options: dispatchAccounts[1].patientEscortRooms, status: '啟用', order: '1', notes: '需核對病患身分後再送出。' },
+      { code: 'SP-001', name: '檢體送檢驗科', scope: 'shared', wardAccountId: '', category: '檢體傳送', defaultAssignee: '駐點人員', eta: '15', priority: '急件', receipt: '需要', options: ['一樓檢驗科', '二樓急診檢體區'], status: '啟用', order: '2', notes: '檢體需於 15 分鐘內完成轉送。' },
+      { code: 'BP-001', name: '血品配送', scope: 'shared', wardAccountId: '', category: '血品配送', defaultAssignee: '傳送中心', eta: '20', priority: '緊急', receipt: '需要', options: ['血庫', '手術室', '加護病房'], status: '啟用', order: '3', notes: '需優先處理並確認簽收。' },
+      { code: 'PH-001', name: '領藥', scope: 'shared', wardAccountId: '', category: '物資傳送', defaultAssignee: '駐點人員', eta: '25', priority: '一般', receipt: '需要', options: ['一樓藥房', '三樓藥庫'], status: '啟用', order: '4', notes: '需依處方單核對品項。' },
+      { code: 'DOC-001', name: '文件送交行政單位', scope: 'shared', wardAccountId: '', category: '文件傳送', defaultAssignee: '傳送中心', eta: '60', priority: '低', receipt: '不需要', options: ['行政櫃台', '人資室', '總務室'], status: '停用', order: '5', notes: '僅限平日上班時間派送。' }
+    ];
+
+    const wardUnits = dispatchAccounts.flatMap(account => account.wards);
+    const activeEmployees = employees.filter(employee => employee.enabled);
+    const cancelledRecordIndexes = new Set([5, 14, 23, 34, 42]);
+    const unassignedRecordIndexes = new Set([33, 36, 39, 41, 43, 46]);
+    const assignedRecordIndexes = new Set([32, 35, 37, 38]);
+    const inProgressRecordIndexes = new Set([24, 25, 26, 27]);
+    const dispatchHistoryRecords = Array.from({ length: 48 }, (_, index) => {
+      const sourceWard = wardUnits[index % wardUnits.length];
+      const wardAccount = dispatchAccounts.find(account => account.wards.includes(sourceWard)) || dispatchAccounts[0];
+      const availableWorkItems = workItems.filter(item => item.scope === 'shared' || item.wardAccountId === wardAccount.id);
+      const workItem = availableWorkItems[index % availableWorkItems.length];
+      const employee = activeEmployees[index % activeEmployees.length];
+      const hour = String(8 + Math.floor(index / 4)).padStart(2, '0');
+      const minute = ['00', '15', '30', '45'][index % 4];
+      let status = '已完成';
+      if (assignedRecordIndexes.has(index)) status = '已派工';
+      else if (inProgressRecordIndexes.has(index)) status = '進行中';
+      if (cancelledRecordIndexes.has(index)) status = '已取消';
+
+      return {
+        id: `WO-20260520-${String(index + 1).padStart(3, '0')}`,
+        date: RECORD_DATE,
+        time: `${hour}:${minute}`,
+        workItem: workItem.name,
+        workItemCode: workItem.code,
+        assignee: workItem.defaultAssignee,
+        priority: workItem.priority,
+        status,
+        employeeId: unassignedRecordIndexes.has(index) && status === '已派工' ? '' : employee.id,
+        employeeName: unassignedRecordIndexes.has(index) && status === '已派工' ? '無' : employee.name,
+        selectedOption: workItem.options[0] || '',
+        sourceWard,
+        acceptedAt: unassignedRecordIndexes.has(index) && status === '已派工' ? '' : `${RECORD_DATE} ${hour}:${minute}`,
+        completedAt: status === '已完成' ? `${RECORD_DATE} ${hour}:${minute}` : ''
+      };
+    }).sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+
+    const progressInquiries = [
+      { id: 'IQ-001', recordId: 'WO-20260520-017', date: RECORD_DATE, time: '10:15', status: '待回覆', replyText: '' },
+      { id: 'IQ-002', recordId: 'WO-20260520-020', date: RECORD_DATE, time: '10:45', status: '待回覆', replyText: '' },
+      { id: 'IQ-003', recordId: 'WO-20260520-024', date: RECORD_DATE, time: '11:30', status: '已回覆', replyText: '已接觸病房，預計 10 分鐘內送達。' }
+    ];
+
+    const anomalyReports = [
+      { id: 'AB-001', recordId: 'WO-20260520-019', date: RECORD_DATE, time: '10:40', category: '路線受阻', notes: '電梯保養改走備援路線。', status: '待處理' },
+      { id: 'AB-002', recordId: 'WO-20260520-033', date: RECORD_DATE, time: '14:15', category: '病患狀況變更', notes: '檢查前需先返回病房評估。', status: '已結案' },
+      { id: 'AB-003', recordId: 'WO-20260520-036', date: RECORD_DATE, time: '15:00', category: '單據資訊不完整', notes: '缺少送件單位聯絡資訊。', status: '待處理' }
+    ];
+
+    function getRecordById(recordId) {
+      return dispatchHistoryRecords.find(record => record.id === recordId);
+    }
+    function getEmployeeById(employeeId) {
+      return employees.find(employee => employee.id === employeeId);
+    }
+    function getDispatchAccountById(accountId) {
+      return dispatchAccounts.find(account => account.id === accountId);
+    }
+    function getDispatchAccountByWardUnit(wardUnit) {
+      return dispatchAccounts.find(account => account.wards.includes(wardUnit));
+    }
+    function getWardDisplayName(wardUnit) {
+      const account = getDispatchAccountByWardUnit(wardUnit);
+      return account ? account.name : wardUnit;
+    }
+    function getWardFilterValue(wardUnit) {
+      const account = getDispatchAccountByWardUnit(wardUnit);
+      return account ? account.id : wardUnit;
+    }
+    function isRecordInSelectedPorterStations(record) {
+      if (!selectedPorterStationAccounts.size) return false;
+      return selectedPorterStationAccounts.has(getWardFilterValue(record.sourceWard));
+    }
+    function getPorterDashboardVisibleTaskRecords() {
+      return dispatchHistoryRecords.filter(record => record.employeeName !== '無' && isRecordInSelectedPorterStations(record));
+    }
+    function getPorterDashboardPendingInquiries() {
+      return progressInquiries.filter(item => {
+        if (item.status !== '待回覆') return false;
+        const record = getRecordById(item.recordId);
+        return record ? isRecordInSelectedPorterStations(record) : false;
+      });
+    }
+    function getPorterDashboardAnomalies() {
+      return anomalyReports.filter(item => {
+        const record = getRecordById(item.recordId);
+        return record ? isRecordInSelectedPorterStations(record) : false;
+      });
+    }
+    function getCurrentDispatchStationedTaskStats() {
+      const currentWardActiveRecords = getDispatchVisibleRecords().filter(record => (
+        ['已派工', '進行中'].includes(record.status)
+      ));
+      const stationedEmployeeIds = [...new Set(
+        currentWardActiveRecords
+          .map(record => record.employeeId)
+          .filter(Boolean)
+      )];
+      const stationedRecords = stationedEmployeeIds.length
+        ? dispatchHistoryRecords.filter(record => (
+          stationedEmployeeIds.includes(record.employeeId)
+          && ['已派工', '進行中'].includes(record.status)
+        ))
+        : [];
+      const currentWardAssignedCount = currentWardActiveRecords.filter(record => record.status === '已派工').length;
+      const currentWardInProgressCount = currentWardActiveRecords.filter(record => record.status === '進行中').length;
+      const stationedAssignedCount = stationedRecords.filter(record => record.status === '已派工').length;
+      const stationedInProgressCount = stationedRecords.filter(record => record.status === '進行中').length;
+      return {
+        assigned: Math.max(currentWardAssignedCount, stationedAssignedCount),
+        inProgress: Math.max(currentWardInProgressCount, stationedInProgressCount)
+      };
+    }
+    function getOrderedPorterStationAccounts() {
+      const activeAccounts = dispatchAccounts.filter(account => selectedPorterStationAccounts.has(account.id));
+      const inactiveAccounts = dispatchAccounts.filter(account => !selectedPorterStationAccounts.has(account.id));
+      return [...activeAccounts, ...inactiveAccounts];
+    }
+    function getCurrentDispatchAccount() {
+      return getDispatchAccountById(currentDispatchAccountId) || dispatchAccounts[0];
+    }
+    function getClearBedRoomsByAccount(accountId) {
+      if (!clearBedRoomsByAccount[accountId]) clearBedRoomsByAccount[accountId] = [];
+      return clearBedRoomsByAccount[accountId];
+    }
+    function getCurrentClearBedRooms() {
+      return getClearBedRoomsByAccount(getCurrentDispatchAccount().id);
+    }
+    function getCleanerVisibleAccounts() {
+      if (cleanerWardFilter === 'all') return dispatchAccounts;
+      const account = getDispatchAccountById(cleanerWardFilter);
+      return account ? [account] : [];
+    }
+    function getCleanerDashboardRooms() {
+      return getCleanerVisibleAccounts().flatMap(account => (
+        sortRoomsByNumber(getClearBedRoomsByAccount(account.id)).map(room => ({
+          ...room,
+          accountId: account.id,
+          accountName: account.name
+        }))
+      ));
+    }
+    function getClearBedStatusCounts(rooms) {
+      const beds = rooms.flatMap(room => room.beds || []);
+      const counts = clearBedStatuses.reduce((result, item) => {
+        result[item.value] = beds.filter(bed => getBedStatus(bed) === item.value).length;
+        return result;
+      }, {});
+      return { beds, counts };
+    }
+    function getClearBedRoomById(roomId, accountId = getCurrentDispatchAccount().id) {
+      return getClearBedRoomsByAccount(accountId).find(room => room.id === roomId);
+    }
+    function getSelectedClearBedRoom() {
+      if (!selectedClearBedRoomId || !selectedClearBedRoomAccountId) return null;
+      return getClearBedRoomById(selectedClearBedRoomId, selectedClearBedRoomAccountId);
+    }
+    function sortRoomsByNumber(rooms) {
+      return [...rooms].sort((a, b) => a.roomNumber.localeCompare(b.roomNumber, 'zh-Hant', { numeric: true }));
+    }
+    function normalizeBedSuffixLabel(suffix) {
+      const raw = suffix.trim().toUpperCase();
+      if (/^[A-Z]$/.test(raw)) return String(raw.charCodeAt(0) - 64);
+      return raw;
+    }
+    function getBedSuffix(bedCode, roomNumber) {
+      if (bedCode.startsWith(`${roomNumber}-`)) return normalizeBedSuffixLabel(bedCode.slice(roomNumber.length + 1));
+      const matchedSuffix = bedCode.match(/^[^-]+-(.+)$/);
+      return matchedSuffix ? normalizeBedSuffixLabel(matchedSuffix[1]) : normalizeBedSuffixLabel(bedCode);
+    }
+    function getBedCode(bed) {
+      return typeof bed === 'string' ? bed : bed.code;
+    }
+    function getBedStatus(bed) {
+      return typeof bed === 'string' ? '清床完畢' : bed.status;
+    }
+    function createBedRecord(code, status = '清床完畢') {
+      return { code, status };
+    }
+    function normalizeBedCode(roomNumber, bedCode) {
+      const raw = bedCode.trim().toUpperCase();
+      if (!raw) return '';
+      if (raw.startsWith(`${roomNumber}-`)) return `${roomNumber}-${normalizeBedSuffixLabel(raw.slice(roomNumber.length + 1))}`;
+      if (/^[A-Z0-9]+$/.test(raw)) return `${roomNumber}-${normalizeBedSuffixLabel(raw)}`;
+      return raw;
+    }
+    function sortBeds(beds) {
+      return beds.sort((a, b) => getBedCode(a).localeCompare(getBedCode(b), 'zh-Hant', { numeric: true }));
+    }
+    function getClearBedStatusMeta(status) {
+      return clearBedStatuses.find(item => item.value === status) || clearBedStatuses[3];
+    }
+    function getNextClearBedStatus(status) {
+      const currentIndex = clearBedStatuses.findIndex(item => item.value === status);
+      const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % clearBedStatuses.length : 0;
+      return clearBedStatuses[nextIndex].value;
+    }
+    function canCleanerUpdateBedStatus(status) {
+      return status === '待清床' || status === '清床中';
+    }
+    function canOperateCleanBedDashboard() {
+      return currentRole === 'cleaner' || currentRole === 'center';
+    }
+    function getBedDisplayCode(bed, roomNumber) {
+      return getBedSuffix(getBedCode(bed), roomNumber);
+    }
+    function getFilteredBedsForRoom(room) {
+      if (!selectedClearBedStatuses.size) return room.beds;
+      return room.beds.filter(bed => selectedClearBedStatuses.has(getBedStatus(bed)));
+    }
+    function getRoomSignalDotsMarkup(beds) {
+      const visibleBeds = beds.length ? beds : [createBedRecord('EMPTY', '清床完畢')];
+      return visibleBeds.map(bed => {
+        const statusMeta = getClearBedStatusMeta(getBedStatus(bed));
+        return `<span class="room-signal ${statusMeta.className}"></span>`;
+      }).join('');
+    }
+    function getNextClearBedRoomId(accountId) {
+      const roomCount = getClearBedRoomsByAccount(accountId).length + 1;
+      return `${accountId}-room-${roomCount}-${Date.now()}`;
+    }
+    function getWorkItemByCode(code) {
+      return workItems.find(item => item.code === code);
+    }
+    function getWorkItemScopeLabel(item) {
+      if (item.scope === 'shared') return '共用';
+      const account = getDispatchAccountById(item.wardAccountId);
+      return account ? `${account.name}專屬` : '病房專屬';
+    }
+    function getWorkItemSelectLabel(item) {
+      return item.scope === 'shared' ? item.name : `${item.name}（${getWorkItemScopeLabel(item)}）`;
+    }
+    function isWorkItemVisibleForAccount(item, accountId) {
+      return item.scope === 'shared' || item.wardAccountId === accountId;
+    }
+    function getVisibleWorkItemsForAccount(accountId, includeDisabled = true) {
+      return workItems.filter(item => {
+        if (!isWorkItemVisibleForAccount(item, accountId)) return false;
+        if (!includeDisabled && item.status !== '啟用') return false;
+        return true;
+      });
+    }
+    function getCurrentRoleWorkItems(includeDisabled = true) {
+      if (currentRole === 'dispatch') return getVisibleWorkItemsForAccount(currentDispatchAccountId, includeDisabled);
+      return workItems.filter(item => includeDisabled || item.status === '啟用');
+    }
+    function getDispatchVisibleRecords() {
+      if (currentRole !== 'dispatch') return dispatchHistoryRecords;
+      const visibleWards = new Set(getCurrentDispatchAccount().wards);
+      return dispatchHistoryRecords.filter(record => visibleWards.has(record.sourceWard));
+    }
+    function getDispatchVisibleAnomalies() {
+      if (currentRole !== 'dispatch') return anomalyReports;
+      const visibleRecordIds = new Set(getDispatchVisibleRecords().map(record => record.id));
+      return anomalyReports.filter(report => visibleRecordIds.has(report.recordId));
+    }
+    function updateSessionLabels() {
+      const sessionLabel = document.getElementById('currentSessionLabel');
+      const dashboardTitle = document.getElementById('dashboardTitle');
+      const workItemsTitle = document.getElementById('workItemsPageTitle');
+      const workItemsHint = document.getElementById('workItemsPageHint');
+      const clearBedTitle = document.getElementById('clearBedManagementTitle');
+      const clearBedHint = document.getElementById('clearBedManagementHint');
+      const cleanBedDashboardTitle = document.getElementById('cleanBedDashboardTitle');
+      const cleanBedDashboardHint = document.getElementById('cleanBedDashboardHint');
+      const currentAccount = getCurrentDispatchAccount();
+      const setText = (element, text) => {
+        if (element) element.textContent = text;
+      };
+
+      if (currentRole === 'dispatch') {
+        setText(sessionLabel, `目前帳號：${currentAccount.name}`);
+        setText(dashboardTitle, currentAccount.id === 'ward3'
+          ? 'A3病房 傳送派工管理'
+          : `${currentAccount.name}儀表板`);
+        setText(workItemsTitle, `${currentAccount.name}工作項目管理`);
+        setText(workItemsHint, `顯示共用項目與 ${currentAccount.name}專屬項目。`);
+        setText(clearBedTitle, `${currentAccount.name}清床管理`);
+        setText(cleanBedDashboardTitle, '清床儀表板');
+        setText(cleanBedDashboardHint, '顯示所有病房的房間與床位狀態。');
+        return;
+      }
+
+      setText(dashboardTitle, '派工單位儀表板');
+      setText(workItemsTitle, '工作項目管理');
+      setText(clearBedTitle, '清床管理');
+      if (currentRole === 'center') {
+        setText(sessionLabel, '目前帳號：傳送中心');
+        setText(workItemsHint, '可管理共用與所有病房專屬項目。');
+        setText(clearBedHint, '病房專屬頁面僅於病房帳號下使用。');
+        setText(cleanBedDashboardTitle, '清床儀表板');
+        setText(cleanBedDashboardHint, '可依病房查看所有房間與床位狀態。');
+      } else if (currentRole === 'cleaner') {
+        setText(sessionLabel, '目前帳號：清床人員');
+        setText(workItemsHint, '工作項目區分為共用與病房專屬。');
+        setText(clearBedHint, '病房專屬頁面僅於病房帳號下使用。');
+        setText(cleanBedDashboardTitle, '清床儀表板');
+        setText(cleanBedDashboardHint, '可依病房查看所有房間與床位狀態。');
+      } else {
+        setText(sessionLabel, '目前帳號：傳送人員');
+        setText(workItemsHint, '工作項目區分為共用與病房專屬。');
+        setText(clearBedHint, '病房專屬頁面僅於病房帳號下使用。');
+        setText(cleanBedDashboardTitle, '清床儀表板');
+        setText(cleanBedDashboardHint, '顯示所有病房的房間與床位狀態。');
+      }
+    }
+    function populateDispatchSourceWardOptions() {
+      const select = document.getElementById('dispatchSourceWard');
+      const currentValue = select.value;
+      const wards = getCurrentDispatchAccount().wards;
+      select.innerHTML = wards.map(ward => `<option value="${ward}">${ward}</option>`).join('');
+      if ([...select.options].some(option => option.value === currentValue)) select.value = currentValue;
+      else select.value = wards[0] || '';
+    }
+    function getDefaultDispatchSourceWard() {
+      return getCurrentDispatchAccount().wards[0] || document.getElementById('dispatchSourceWard').value || '';
+    }
+    function syncDispatchSourceWardField() {
+      const field = document.getElementById('dispatchSourceWardField');
+      if (!field) return;
+      field.classList.toggle('hidden', currentRole === 'dispatch');
+    }
+    function populateWorkItemScopeOptions(selectedValue = 'shared') {
+      const select = document.getElementById('workItemScope');
+      const options = currentRole === 'dispatch'
+        ? [
+            { value: 'shared', label: '共用' },
+            { value: `ward:${getCurrentDispatchAccount().id}`, label: `${getCurrentDispatchAccount().name}專屬` }
+          ]
+        : [
+            { value: 'shared', label: '共用' },
+            ...dispatchAccounts.map(account => ({ value: `ward:${account.id}`, label: `${account.name}專屬` }))
+          ];
+      select.innerHTML = options.map(option => `<option value="${option.value}">${option.label}</option>`).join('');
+      select.value = options.some(option => option.value === selectedValue) ? selectedValue : options[0].value;
+    }
+    function getStatusBadgeClass(status) {
+      if (status === '進行中') return 'badge gray';
+      if (status === '已完成') return 'badge blue';
+      if (status === '已取消') return 'badge red';
+      return 'badge';
+    }
+    function getCurrentActionTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+    function getEmployeeTaskRecords(employeeId) {
+      return dispatchHistoryRecords.filter(record => record.employeeId === employeeId);
+    }
+    function getLastCompletedTime(employeeId) {
+      const completedTimes = dispatchHistoryRecords
+        .filter(record => record.employeeId === employeeId && record.completedAt)
+        .map(record => record.completedAt)
+        .sort((a, b) => b.localeCompare(a));
+      return completedTimes[0] || '無';
+    }
+    function getLastAcceptedTime(employeeId) {
+      const acceptedTimes = dispatchHistoryRecords
+        .filter(record => record.employeeId === employeeId && record.acceptedAt)
+        .map(record => record.acceptedAt)
+        .sort((a, b) => b.localeCompare(a));
+      return acceptedTimes[0] || '無';
+    }
+    function getEmployeeLiveStats(employeeId) {
+      const records = getEmployeeTaskRecords(employeeId);
+      const activeRecords = records.filter(record => ['已派工', '進行中'].includes(record.status));
+      const anomalyCount = anomalyReports.filter(report => {
+        const record = getRecordById(report.recordId);
+        return record && record.employeeId === employeeId;
+      }).length;
+      return {
+        activeCount: activeRecords.length,
+        assignedCount: records.filter(record => record.status === '已派工').length,
+        inProgressCount: records.filter(record => record.status === '進行中').length,
+        anomalyCount
+      };
+    }
+    function getEmployeeDutyStatus(employee) {
+      if (!employee.enabled) return '停用';
+      if (!employee.onDuty) return '未執勤';
+      const stats = getEmployeeLiveStats(employee.id);
+      if (stats.inProgressCount > 0) return '執勤中';
+      if (stats.activeCount > 0) return '待接手';
+      return '待命';
+    }
+    function getProgressInquiryCount(recordId) {
+      return progressInquiries.filter(item => item.recordId === recordId).length;
+    }
+    function getAnomalyCount(recordId) {
+      return anomalyReports.filter(item => item.recordId === recordId).length;
+    }
+    function getActionButtons(record) {
+      if (record.status === '已派工') {
+        return `<div class="action-buttons"><button class="btn light" onclick="cancelDispatch('${record.id}')">取消</button></div>`;
+      }
+      if (record.status === '進行中') {
+        return `<div class="action-buttons"><button class="btn light" onclick="askProgress('${record.id}')">詢問進度 (${getProgressInquiryCount(record.id)})</button><button class="btn light" onclick="openAnomalyModal('${record.id}')">異常回報 (${getAnomalyCount(record.id)})</button></div>`;
+      }
+      if (record.status === '已完成') {
+        return `<div class="action-buttons"><button class="btn light" onclick="openAnomalyModal('${record.id}')">異常回報 (${getAnomalyCount(record.id)})</button></div>`;
+      }
+      return '<span class="hint">無</span>';
+    }
+    function renderPagination(containerId, activePage, totalPages, onPageChange) {
+      const pagination = document.getElementById(containerId);
+      pagination.innerHTML = '';
+
+      const prevButton = document.createElement('button');
+      prevButton.className = 'page-btn';
+      prevButton.textContent = '‹';
+      prevButton.disabled = activePage === 1;
+      prevButton.onclick = () => onPageChange(activePage - 1);
+      pagination.appendChild(prevButton);
+
+      for (let page = 1; page <= totalPages; page += 1) {
+        const pageButton = document.createElement('button');
+        pageButton.className = `page-btn${page === activePage ? ' active' : ''}`;
+        pageButton.textContent = page;
+        pageButton.onclick = () => onPageChange(page);
+        pagination.appendChild(pageButton);
+      }
+
+      const nextButton = document.createElement('button');
+      nextButton.className = 'page-btn';
+      nextButton.textContent = '›';
+      nextButton.disabled = activePage === totalPages;
+      nextButton.onclick = () => onPageChange(activePage + 1);
+      pagination.appendChild(nextButton);
+    }
+    function renderDashboardStats() {
+      const visibleRecords = getDispatchVisibleRecords();
+      const stationedStats = getCurrentDispatchStationedTaskStats();
+      document.getElementById('dispatchAssignedCount').textContent = visibleRecords.filter(record => record.status === '已派工').length;
+      document.getElementById('dispatchInProgressCount').textContent = visibleRecords.filter(record => record.status === '進行中').length;
+      document.getElementById('dispatchCompletedCount').textContent = visibleRecords.filter(record => record.status === '已完成').length;
+      document.getElementById('dispatchStationedAssignedCount').textContent = stationedStats.assigned;
+      document.getElementById('dispatchStationedInProgressCount').textContent = stationedStats.inProgress;
+    }
+    function renderPorterStationFilters() {
+      const container = document.getElementById('porterStationSelector');
+      if (!container) return;
+      const activeAccounts = dispatchAccounts.filter(account => selectedPorterStationAccounts.has(account.id));
+      const names = activeAccounts.map(account => account.name).join('、');
+      container.innerHTML = `
+        <button type="button" class="porter-station-card porter-station-summary-card${activeAccounts.length ? ' is-active' : ''}" onclick="openPorterStationModal()">
+          <div class="porter-station-card-head">
+            <div>
+              <div class="porter-station-summary-label">當前駐點病房</div>
+              <div class="porter-station-summary-value">${names || '尚未駐點'}</div>
+            </div>
+            <span class="porter-station-status${activeAccounts.length ? ' is-active' : ''}">${activeAccounts.length ? `${activeAccounts.length} 個駐點` : '未駐點'}</span>
+          </div>
+          <div class="porter-station-expand-note">點一下查看所有病房，並操作開始或離開駐點。</div>
+        </button>
+      `;
+    }
+    function renderPorterStationModalList() {
+      const container = document.getElementById('porterStationModalList');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="porter-station-grid">
+          ${getOrderedPorterStationAccounts().map(account => {
+            const isActive = selectedPorterStationAccounts.has(account.id);
+            return `
+              <div class="porter-station-card${isActive ? ' is-active' : ''}">
+                <div class="porter-station-card-head">
+                  <div class="porter-station-name">${account.name}</div>
+                  <span class="porter-station-status${isActive ? ' is-active' : ''}">${isActive ? '駐點中' : '未駐點'}</span>
+                </div>
+                <div class="porter-station-actions">
+                  <span class="porter-station-expand-note">${isActive ? '目前已在此病房駐點' : '可開始駐點此病房'}</span>
+                  <button type="button" class="btn light" onclick="openPorterStationConfirmModal('${account.id}', '${isActive ? 'leave' : 'start'}')">${isActive ? '離開駐點' : '開始駐點'}</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+    function openPorterStationModal() {
+      renderPorterStationModalList();
+      openModal('porterStationModal');
+    }
+    function closePorterStationModal() {
+      closeModal('porterStationModal');
+    }
+    function openPorterStationConfirmModal(accountId, action) {
+      const account = getDispatchAccountById(accountId);
+      if (!account) return;
+      pendingPorterStationAction = { accountId, action };
+      document.getElementById('porterStationConfirmTitle').textContent = action === 'leave' ? '確認離開駐點' : '確認開始駐點';
+      document.getElementById('porterStationConfirmText').textContent = `確定 ${action === 'leave' ? '離開' : '開始'} 駐點 ${account.name} 嗎？`;
+      document.getElementById('porterStationConfirmActionButton').textContent = action === 'leave' ? '確認離開' : '確認開始';
+      openModal('porterStationConfirmModal');
+    }
+    function closePorterStationConfirmModal() {
+      pendingPorterStationAction = null;
+      closeModal('porterStationConfirmModal');
+    }
+    function confirmPorterStationAction() {
+      if (!pendingPorterStationAction) return;
+      const { accountId, action } = pendingPorterStationAction;
+      if (action === 'leave') selectedPorterStationAccounts.delete(accountId);
+      else selectedPorterStationAccounts.add(accountId);
+      closePorterStationConfirmModal();
+      renderPorterStationModalList();
+      renderPorterPage();
+      renderDashboardStats();
+    }
+    function getNavigationGroupsByRole(role) {
+      const config = {
+        dispatch: [
+          {
+            title: '派工單位（病房）',
+            items: [
+              { page: 'dashboard', label: '傳送派工管理' },
+              { page: 'dispatchHistory', label: '派工歷史紀錄' },
+              { page: 'clearBedManagement', label: '清床管理' },
+              { page: 'anomalyDashboard', label: '異常儀表板' },
+              { page: 'workItems', label: '工作項目管理' }
+            ]
+          }
+        ],
+        porter: [
+          {
+            title: '接單單位（傳送人員）',
+            items: [
+              { page: 'porterTasks', label: '傳送任務儀表板' },
+              { page: 'porterAnomalyRecords', label: '異常紀錄' },
+              { page: 'porterTaskRecords', label: '任務紀錄' }
+            ]
+          }
+        ],
+        cleaner: [
+          {
+            title: '清床人員',
+            items: [
+              { page: 'cleanBedDashboard', label: '清床儀表板' }
+            ]
+          }
+        ],
+        center: [
+          {
+            title: '管理單位（傳送中心）',
+            items: [
+              { page: 'peopleManagement', label: '人員管控' },
+              { page: 'centerTaskDashboard', label: '任務儀表板', action: 'openAllCenterTasks' },
+              { page: 'workItems', label: '工作項目管理' },
+              { page: 'dutyEmployeeManagement', label: '執勤員工管理' },
+              { page: 'qrCodeManagement', label: '各病房單位QR cord' },
+              { page: 'anomalyDashboard', label: '異常管控' }
+            ]
+          },
+          {
+            title: '清潔管理',
+            items: [
+              { page: 'cleanBedDashboard', label: '清床儀表板' },
+              { page: 'environmentInspection', label: '環境巡檢通報系統(開發中)' },
+              { page: 'serviceSurvey', label: '定期服務問卷調查表(開發中)' }
+            ]
+          },
+          {
+            title: '公司內部系統',
+            items: [
+              { page: 'robotManagement', label: '傳送機器人後台管理系統(開發中)' },
+              { page: 'trainingDatabase', label: '教育訓練資料庫(開發中)' },
+              { page: 'hrManagement', label: '人事管理系統(開發中)' },
+              { page: 'schedulingSystem', label: '排班作業系統(開發中)' },
+              { page: 'payrollSystem', label: '薪資作業系統(開發中)' }
+            ]
+          }
+        ]
+      };
+      return config[role] || config.dispatch;
+    }
+    function updateNavigationByRole(role) {
+      const sidebarNav = document.getElementById('sidebarNav');
+      if (!sidebarNav) return;
+      sidebarNav.innerHTML = getNavigationGroupsByRole(role).map(group => `
+        <div class="nav-group">
+          <h2>${group.title}</h2>
+          ${group.items.map(item => `
+            <div class="nav-item" data-page="${item.page}" onclick="${item.action ? `${item.action}()` : `showPage('${item.page}')`}">${item.label}</div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+    function getFilteredDispatchHistory() {
+      const dateFrom = document.getElementById('historyDateFrom').value;
+      const dateTo = document.getElementById('historyDateTo').value;
+      const timeFrom = document.getElementById('historyTimeFrom').value;
+      const timeTo = document.getElementById('historyTimeTo').value;
+      const workItem = document.getElementById('historyWorkItem').value;
+      const status = document.getElementById('historyStatus').value;
+      const assignee = document.getElementById('historyAssignee').value;
+      const keyword = document.getElementById('historyKeyword').value.trim();
+
+      return getDispatchVisibleRecords().filter(record => {
+        if (dateFrom && record.date < dateFrom) return false;
+        if (dateTo && record.date > dateTo) return false;
+        if (timeFrom && record.time < timeFrom) return false;
+        if (timeTo && record.time > timeTo) return false;
+        if (workItem && record.workItemCode !== workItem) return false;
+        if (status && record.status !== status) return false;
+        if (assignee && record.assignee !== assignee) return false;
+        if (keyword && !`${record.id} ${record.workItem} ${record.employeeName}`.includes(keyword)) return false;
+        return true;
+      });
+    }
+    function renderDispatchHistory() {
+      const filteredRecords = getFilteredDispatchHistory();
+      const totalPages = Math.max(1, Math.ceil(filteredRecords.length / HISTORY_PAGE_SIZE));
+      if (dispatchHistoryPage > totalPages) dispatchHistoryPage = totalPages;
+
+      const startIndex = (dispatchHistoryPage - 1) * HISTORY_PAGE_SIZE;
+      const currentPageRecords = filteredRecords.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+      const tbody = document.getElementById('dispatchHistoryTableBody');
+
+      if (!currentPageRecords.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="hint">查無符合條件的派工紀錄</td></tr>';
+      } else {
+        tbody.innerHTML = currentPageRecords.map(record => `
+          <tr>
+            <td><span class="${getStatusBadgeClass(record.status)}">${record.status}</span></td>
+            <td>${record.id}</td>
+            <td>${record.date}</td>
+            <td>${record.time}</td>
+            <td>${record.workItem}</td>
+            <td>${record.assignee}</td>
+            <td>${record.priority}</td>
+            <td>${getActionButtons(record)}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('dispatchHistorySummary').textContent = `共 ${filteredRecords.length} 筆`;
+      document.getElementById('dispatchHistoryPageInfo').textContent = `第 ${dispatchHistoryPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('dispatchHistoryPagination', dispatchHistoryPage, totalPages, goToDispatchHistoryPage);
+    }
+    function goToDispatchHistoryPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getFilteredDispatchHistory().length / HISTORY_PAGE_SIZE));
+      dispatchHistoryPage = Math.min(Math.max(page, 1), totalPages);
+      renderDispatchHistory();
+    }
+    function applyDispatchHistoryFilters() {
+      dispatchHistoryPage = 1;
+      renderDispatchHistory();
+    }
+    function hideDispatchHistoryFilters() {
+      closeCustomSelect();
+      document.getElementById('dispatchHistoryFilters').classList.add('hidden');
+      document.getElementById('dispatchHistoryFilterToggle').classList.remove('hidden');
+    }
+    function showDispatchHistoryFilters() {
+      document.getElementById('dispatchHistoryFilters').classList.remove('hidden');
+      document.getElementById('dispatchHistoryFilterToggle').classList.add('hidden');
+    }
+    function resetDispatchHistoryFilters() {
+      document.getElementById('historyDateFrom').value = '';
+      document.getElementById('historyDateTo').value = '';
+      document.getElementById('historyTimeFrom').value = '';
+      document.getElementById('historyTimeTo').value = '';
+      document.getElementById('historyWorkItem').value = '';
+      document.getElementById('historyStatus').value = '';
+      document.getElementById('historyAssignee').value = '';
+      document.getElementById('historyKeyword').value = '';
+      dispatchHistoryPage = 1;
+      renderDispatchHistory();
+    }
+    function getListModalRecords() {
+      return getDispatchVisibleRecords().filter(record => record.status === listModalStatusFilter);
+    }
+    function renderListModal() {
+      const records = getListModalRecords();
+      const totalPages = Math.max(1, Math.ceil(records.length / LIST_MODAL_PAGE_SIZE));
+      if (listModalPage > totalPages) listModalPage = totalPages;
+
+      const startIndex = (listModalPage - 1) * LIST_MODAL_PAGE_SIZE;
+      const currentPageRecords = records.slice(startIndex, startIndex + LIST_MODAL_PAGE_SIZE);
+      const tbody = document.getElementById('listModalTableBody');
+
+      if (!currentPageRecords.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="hint">目前沒有符合狀態的派工紀錄</td></tr>';
+      } else {
+        tbody.innerHTML = currentPageRecords.map(record => `
+          <tr>
+            <td>${record.workItem}</td>
+            <td>${record.assignee}</td>
+            <td>${record.id}</td>
+            <td>${record.date}</td>
+            <td>${record.time}</td>
+            <td><span class="${getStatusBadgeClass(record.status)}">${record.status}</span></td>
+            <td>${getActionButtons(record)}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('listModalTitle').textContent = `${listModalStatusFilter}清單`;
+      document.getElementById('listModalPageInfo').textContent = `第 ${listModalPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('listModalPagination', listModalPage, totalPages, goToListModalPage);
+    }
+    function goToListModalPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getListModalRecords().length / LIST_MODAL_PAGE_SIZE));
+      listModalPage = Math.min(Math.max(page, 1), totalPages);
+      renderListModal();
+    }
+    function openDispatchStatusModal(status) {
+      listModalStatusFilter = status;
+      listModalPage = 1;
+      renderListModal();
+      openModal('listModal');
+    }
+    function getFilteredAnomalies() {
+      const date = document.getElementById('anomalyDateFilter').value;
+      const category = document.getElementById('anomalyCategoryFilter').value;
+      const status = document.getElementById('anomalyStatusFilter').value;
+      const keyword = document.getElementById('anomalyKeywordFilter').value.trim();
+
+      return getDispatchVisibleAnomalies().filter(report => {
+        if (date && report.date !== date) return false;
+        if (category && report.category !== category) return false;
+        if (status && report.status !== status) return false;
+        if (keyword && !`${report.recordId} ${report.notes}`.includes(keyword)) return false;
+        return true;
+      });
+    }
+    function renderAnomalyDashboard() {
+      const visibleAnomalies = getDispatchVisibleAnomalies();
+      document.getElementById('anomalyTotalCount').textContent = visibleAnomalies.length;
+      document.getElementById('anomalyPendingCount').textContent = visibleAnomalies.filter(report => report.status === '待處理').length;
+      document.getElementById('anomalyResolvedCount').textContent = visibleAnomalies.filter(report => report.status === '已結案').length;
+
+      const filteredReports = getFilteredAnomalies();
+      const totalPages = Math.max(1, Math.ceil(filteredReports.length / HISTORY_PAGE_SIZE));
+      if (anomalyPage > totalPages) anomalyPage = totalPages;
+
+      const startIndex = (anomalyPage - 1) * HISTORY_PAGE_SIZE;
+      const currentPageReports = filteredReports.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+      const tbody = document.getElementById('anomalyTableBody');
+
+      if (!currentPageReports.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="hint">目前沒有異常紀錄</td></tr>';
+      } else {
+        tbody.innerHTML = currentPageReports.map(report => {
+          const record = getRecordById(report.recordId);
+          return `
+            <tr>
+              <td>${report.recordId}</td>
+              <td>${report.date}</td>
+              <td>${report.time}</td>
+              <td>${record ? record.workItem : '-'}</td>
+              <td>${report.category}</td>
+              <td>${report.notes}</td>
+              <td><span class="${report.status === '已結案' ? 'badge blue' : 'badge red'}">${report.status}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('anomalySummary').textContent = `共 ${filteredReports.length} 筆`;
+      document.getElementById('anomalyPageInfo').textContent = `第 ${anomalyPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('anomalyPagination', anomalyPage, totalPages, goToAnomalyPage);
+    }
+    function renderClearBedStatusFilters() {
+      const container = document.getElementById('clearBedStatusFilters');
+      container.innerHTML = clearBedStatuses.map(item => `
+        <button type="button" class="status-filter-btn${selectedClearBedStatuses.has(item.value) ? ' active' : ''}" onclick="toggleClearBedStatusFilter('${item.value}')">
+          <span class="status-dot ${item.className}"></span>
+          <span>${item.value}</span>
+        </button>
+      `).join('');
+    }
+    function toggleClearBedStatusFilter(status) {
+      if (selectedClearBedStatuses.has(status)) selectedClearBedStatuses.delete(status);
+      else selectedClearBedStatuses.add(status);
+      renderClearBedStatusFilters();
+      renderClearBedManagement();
+    }
+    function renderClearBedManagement() {
+      const container = document.getElementById('clearBedManagementCards');
+      const rooms = sortRoomsByNumber(getCurrentClearBedRooms());
+      const { beds, counts } = getClearBedStatusCounts(rooms);
+
+      document.getElementById('clearBedOccupiedCount').textContent = counts['住院中'] || 0;
+      document.getElementById('clearBedPendingCleanCount').textContent = counts['待清床'] || 0;
+      document.getElementById('clearBedCleaningCount').textContent = counts['清床中'] || 0;
+      document.getElementById('clearBedEmptyCount').textContent = counts['清床完畢'] || 0;
+      document.getElementById('clearBedStatusSummary').textContent = `共 ${rooms.length} 間房 / ${beds.length} 張床`;
+
+      if (!rooms.length) {
+        container.innerHTML = `
+          <div class="card empty-card">
+            <div>
+              <div class="room-number">尚無房間</div>
+              <div class="room-subtitle">請先建立房間，再進入房間維護床號。</div>
+            </div>
+            <button class="btn" onclick="openClearBedRoomCreate()">新增第一間房</button>
+          </div>
+        `;
+        return;
+      }
+
+      const visibleRooms = rooms
+        .map(room => ({ room, beds: getFilteredBedsForRoom(room) }))
+        .filter(item => !selectedClearBedStatuses.size || item.beds.length);
+
+      if (!visibleRooms.length) {
+        container.innerHTML = `
+          <div class="card empty-card">
+            <div>
+              <div class="room-number">查無符合狀態</div>
+              <div class="room-subtitle">請調整上方篩選，或清除狀態篩選。</div>
+            </div>
+            <button class="btn light" onclick="clearClearBedStatusFilters()">清除篩選</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = visibleRooms.map(({ room, beds }) => `
+        <div class="room-stack">
+          <button type="button" class="room-summary-pill" onclick="openClearBedBedsModal('${room.id}', '${getCurrentDispatchAccount().id}')">
+            <span class="room-signal-group">${getRoomSignalDotsMarkup(beds)}</span>
+            <span class="room-summary-number">${room.roomNumber}</span>
+          </button>
+        </div>
+      `).join('');
+    }
+    function syncCleanerWardFilter() {
+      const select = document.getElementById('cleanerWardFilter');
+      if (!select) return;
+      select.value = cleanerWardFilter;
+    }
+    function syncCleanerStatusViewFilter() {
+      const select = document.getElementById('cleanerStatusViewFilter');
+      if (!select) return;
+      select.value = cleanerStatusView;
+    }
+    function applyCleanerWardFilter() {
+      cleanerWardFilter = document.getElementById('cleanerWardFilter').value;
+      renderCleanBedDashboard();
+    }
+    function applyCleanerStatusViewFilter() {
+      cleanerStatusView = document.getElementById('cleanerStatusViewFilter').value;
+      renderCleanBedDashboard();
+    }
+    function renderCleanBedDashboard() {
+      syncCleanerWardFilter();
+      syncCleanerStatusViewFilter();
+      const rooms = getCleanerDashboardRooms();
+      const { beds: rawBeds, counts: countByStatus } = getClearBedStatusCounts(rooms);
+      const beds = rooms.flatMap(room => room.beds.map(bed => ({
+        roomNumber: room.roomNumber,
+        accountName: room.accountName,
+        bed
+      })));
+
+      document.getElementById('cleanBedOccupiedCount').textContent = countByStatus['住院中'] || 0;
+      document.getElementById('cleanBedPendingCleanCount').textContent = countByStatus['待清床'] || 0;
+      document.getElementById('cleanBedCleaningCount').textContent = countByStatus['清床中'] || 0;
+      document.getElementById('cleanBedEmptyCount').textContent = countByStatus['清床完畢'] || 0;
+
+      const account = cleanerWardFilter === 'all' ? null : getDispatchAccountById(cleanerWardFilter);
+      const targetStatus = cleanerStatusView === 'pending'
+        ? '待清床'
+        : cleanerStatusView === 'cleaning'
+          ? '清床中'
+          : '';
+      const visibleRooms = rooms.map(room => ({
+        ...room,
+        visibleBeds: targetStatus
+          ? room.beds.filter(bed => getBedStatus(bed) === targetStatus)
+          : room.beds
+      })).filter(room => room.visibleBeds.length);
+      const visibleBedCount = visibleRooms.reduce((sum, room) => sum + room.visibleBeds.length, 0);
+
+      document.getElementById('cleanBedDashboardListTitle').textContent = account ? `${account.name}房間卡片` : '所有病房房間卡片';
+      document.getElementById('cleanBedDashboardSummary').textContent = cleanerStatusView === 'pending'
+        ? `待清床共 ${visibleRooms.length} 間房 / ${visibleBedCount} 張床`
+        : cleanerStatusView === 'cleaning'
+          ? `清床中共 ${visibleRooms.length} 間房 / ${visibleBedCount} 張床`
+          : `共 ${rooms.length} 間房 / ${rawBeds.length} 張床`;
+
+      const container = document.getElementById('cleanBedDashboardCards');
+      if (!rooms.length) {
+        container.innerHTML = `
+          <div class="card empty-card">
+            <div>
+              <div class="room-number">尚無房間</div>
+              <div class="room-subtitle">目前沒有可顯示的病房房間資料。</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (!visibleRooms.length) {
+        container.innerHTML = `
+          <div class="card empty-card">
+            <div>
+              <div class="room-number">目前沒有符合床位</div>
+              <div class="room-subtitle">你目前選擇的病房範圍內，沒有${targetStatus || '可顯示'}床位。</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = visibleRooms.map(room => `
+        <div class="room-stack">
+          <button type="button" class="room-summary-pill${room.beds.some(bed => getBedStatus(bed) === '待清床') ? ' pending-highlight' : ''}" onclick="openClearBedBedsModal('${room.id}', '${room.accountId}')">
+            <span class="room-signal-group">${getRoomSignalDotsMarkup(room.visibleBeds)}</span>
+            <span class="room-summary-number">${room.roomNumber}</span>
+          </button>
+        </div>
+      `).join('');
+    }
+    function clearClearBedStatusFilters() {
+      selectedClearBedStatuses.clear();
+      renderClearBedStatusFilters();
+      renderClearBedManagement();
+    }
+    function openClearBedRoomCreate() {
+      editingClearBedRoomId = '';
+      document.getElementById('clearBedRoomModalTitle').textContent = '新增房間';
+      document.getElementById('clearBedRoomNumberInput').value = '';
+      openModal('clearBedRoomModal');
+    }
+    function openClearBedRoomEdit(roomId) {
+      const room = getClearBedRoomById(roomId);
+      if (!room) return;
+      editingClearBedRoomId = roomId;
+      document.getElementById('clearBedRoomModalTitle').textContent = '編輯房間';
+      document.getElementById('clearBedRoomNumberInput').value = room.roomNumber;
+      openModal('clearBedRoomModal');
+    }
+    function saveClearBedRoom() {
+      const roomNumber = document.getElementById('clearBedRoomNumberInput').value.trim();
+      if (!roomNumber) return;
+      const rooms = getCurrentClearBedRooms();
+      const duplicateRoom = rooms.find(room => room.roomNumber === roomNumber && room.id !== editingClearBedRoomId);
+      if (duplicateRoom) return;
+
+      if (editingClearBedRoomId) {
+        const room = getClearBedRoomById(editingClearBedRoomId);
+        if (!room) return;
+        const previousRoomNumber = room.roomNumber;
+        room.roomNumber = roomNumber;
+        room.beds = room.beds.map(bed => createBedRecord(`${roomNumber}-${getBedSuffix(getBedCode(bed), previousRoomNumber)}`, getBedStatus(bed)));
+        expandedClearBedRoomId = room.id;
+      } else {
+        const createdRoom = {
+          id: getNextClearBedRoomId(getCurrentDispatchAccount().id),
+          roomNumber,
+          beds: []
+        };
+        rooms.push(createdRoom);
+        expandedClearBedRoomId = createdRoom.id;
+      }
+
+      editingClearBedRoomId = '';
+      closeModal('clearBedRoomModal');
+      if (selectedClearBedRoomId) renderClearBedBedsModal();
+      renderClearBedManagement();
+      renderCleanBedDashboard();
+    }
+    function renderClearBedBedsModal() {
+      const room = getSelectedClearBedRoom();
+      const list = document.getElementById('clearBedBedsList');
+      const detailCard = document.getElementById('clearBedBedsDetailCard');
+      const hint = document.getElementById('clearBedBedsModalHint');
+      const toolbarActions = document.getElementById('clearBedBedsToolbarActions');
+      if (!room) {
+        detailCard.innerHTML = '<div class="room-empty">查無房間資料</div>';
+        list.innerHTML = '<div class="room-empty">查無房間資料</div>';
+        return;
+      }
+
+      const account = getDispatchAccountById(selectedClearBedRoomAccountId);
+      const isEditable = currentRole === 'dispatch' && selectedClearBedRoomAccountId === getCurrentDispatchAccount().id;
+      const isCleanBedOperator = canOperateCleanBedDashboard();
+      const filteredBeds = isEditable ? getFilteredBedsForRoom(room) : room.beds;
+
+      document.getElementById('clearBedBedsModalTitle').textContent = isEditable ? `${room.roomNumber} 房間管理` : `${room.roomNumber} 房間狀態`;
+      hint.textContent = isEditable
+        ? '點擊床位可切換狀態，並可在此新增、編輯或刪除床號。'
+        : isCleanBedOperator
+          ? `可點擊待清床或清床中床位，確認後切換到下一個狀態。`
+          : `目前查看 ${account ? account.name : ''} 的房間床位狀態。`;
+      detailCard.innerHTML = `
+        <div class="room-card-header">
+          <div>
+            <div class="room-number-row">
+              <div class="room-number">${room.roomNumber}</div>
+              ${isEditable ? `<button class="icon-btn" type="button" aria-label="編輯房間名稱" onclick="openClearBedRoomEdit('${room.id}')">✎</button>` : ''}
+            </div>
+            <div class="room-subtitle">${account ? `${account.name} / ` : ''}共 ${room.beds.length} 張床${isEditable && selectedClearBedStatuses.size ? `，目前顯示 ${filteredBeds.length} 張` : ''}</div>
+          </div>
+        </div>
+        <div class="room-bed-list">
+          ${filteredBeds.length
+            ? filteredBeds.map(bed => {
+                const statusMeta = getClearBedStatusMeta(getBedStatus(bed));
+                const canChange = isEditable || (isCleanBedOperator && canCleanerUpdateBedStatus(getBedStatus(bed)));
+                const clickable = canChange ? ` onclick="requestClearBedStatusChange('${room.id}', '${getBedCode(bed)}', true, '${selectedClearBedRoomAccountId}')"` : '';
+                return `<div class="bed-chip ${statusMeta.className}${canChange ? '' : ' is-static'}"${clickable}><span class="bed-code">${getBedDisplayCode(bed, room.roomNumber)}</span><span class="bed-status-text">- ${getBedStatus(bed)}</span></div>`;
+              }).join('')
+            : '<div class="room-empty">目前篩選下沒有可顯示床位。</div>'}
+        </div>
+      `;
+      toolbarActions.innerHTML = isEditable ? '<button class="btn" onclick="openClearBedBedCreate()">新增床號</button>' : '';
+      list.innerHTML = room.beds.length ? room.beds.map((bed, index) => {
+        const canChange = isEditable || (isCleanBedOperator && canCleanerUpdateBedStatus(getBedStatus(bed)));
+        if (isEditable) {
+          return `
+            <div class="modal-list-item clickable" onclick="requestClearBedStatusChange('${room.id}', '${getBedCode(bed)}', true, '${selectedClearBedRoomAccountId}')">
+              <div class="modal-list-item-copy">
+                <strong>${room.roomNumber}-${getBedDisplayCode(bed, room.roomNumber)}</strong>
+                <div class="hint">${getBedStatus(bed)}，點一下可切換狀態</div>
+              </div>
+              <div class="modal-list-actions">
+                <button class="btn light" onclick="event.stopPropagation(); openClearBedBedEdit(${index})">編輯床號</button>
+                <button class="btn light" onclick="event.stopPropagation(); deleteClearBedBed(${index})">刪除床號</button>
+              </div>
+            </div>
+          `;
+        }
+        return `
+          <div class="modal-list-item${canChange ? ' clickable' : ''}"${canChange ? ` onclick="requestClearBedStatusChange('${room.id}', '${getBedCode(bed)}', true, '${selectedClearBedRoomAccountId}')"` : ''}>
+            <div class="modal-list-item-copy">
+              <strong>${room.roomNumber}-${getBedDisplayCode(bed, room.roomNumber)}</strong>
+              <div class="hint">${getBedStatus(bed)}${canChange ? '，點一下可切換狀態' : ''}</div>
+            </div>
+          </div>
+        `;
+      }).join('') : `<div class="room-empty">${isEditable ? '尚未建立床號，請先新增床號。' : '尚未建立床號。'}</div>`;
+    }
+    function requestClearBedStatusChange(roomId, bedCode, rerenderDialog = false, accountId = selectedClearBedRoomAccountId || getCurrentDispatchAccount().id) {
+      const room = getClearBedRoomById(roomId, accountId);
+      if (!room) return;
+      const bed = room.beds.find(item => getBedCode(item) === bedCode);
+      if (!bed) return;
+      if (canOperateCleanBedDashboard() && currentRole !== 'dispatch' && !canCleanerUpdateBedStatus(getBedStatus(bed))) return;
+      const nextStatus = getNextClearBedStatus(getBedStatus(bed));
+      pendingClearBedStatusChange = { roomId, bedCode, nextStatus, rerenderDialog, accountId };
+      document.getElementById('clearBedStatusConfirmText').textContent = `是否將 ${bedCode} 的狀態改變至「${nextStatus}」？`;
+      openModal('clearBedStatusConfirmModal');
+    }
+    function closeClearBedStatusConfirmModal() {
+      pendingClearBedStatusChange = null;
+      closeModal('clearBedStatusConfirmModal');
+    }
+    function confirmClearBedStatusChange() {
+      if (!pendingClearBedStatusChange) return;
+      const { roomId, bedCode, nextStatus, rerenderDialog, accountId } = pendingClearBedStatusChange;
+      const room = getClearBedRoomById(roomId, accountId);
+      const bed = room ? room.beds.find(item => getBedCode(item) === bedCode) : null;
+      if (!room || !bed) {
+        closeClearBedStatusConfirmModal();
+        return;
+      }
+      bed.status = nextStatus;
+      closeClearBedStatusConfirmModal();
+      renderClearBedManagement();
+      renderCleanBedDashboard();
+      if (rerenderDialog && selectedClearBedRoomId === roomId) renderClearBedBedsModal();
+    }
+    function openClearBedBedsModal(roomId, accountId = getCurrentDispatchAccount().id) {
+      selectedClearBedRoomId = roomId;
+      selectedClearBedRoomAccountId = accountId;
+      renderClearBedBedsModal();
+      openModal('clearBedBedsModal');
+    }
+    function openClearBedBedCreate() {
+      const room = getSelectedClearBedRoom();
+      if (!room) return;
+      editingClearBedBedIndex = -1;
+      document.getElementById('clearBedBedModalTitle').textContent = `新增 ${room.roomNumber} 床號`;
+      document.getElementById('clearBedBedCodeInput').value = '';
+      document.getElementById('clearBedBedStatusInput').value = '清床完畢';
+      openModal('clearBedBedModal');
+    }
+    function openClearBedBedEdit(bedIndex) {
+      const room = getSelectedClearBedRoom();
+      if (!room || !room.beds[bedIndex]) return;
+      editingClearBedBedIndex = bedIndex;
+      document.getElementById('clearBedBedModalTitle').textContent = `編輯 ${room.roomNumber} 床號`;
+      document.getElementById('clearBedBedCodeInput').value = normalizeBedCode(room.roomNumber, getBedCode(room.beds[bedIndex]));
+      document.getElementById('clearBedBedStatusInput').value = getBedStatus(room.beds[bedIndex]);
+      openModal('clearBedBedModal');
+    }
+    function deleteClearBedBed(bedIndex) {
+      const room = getSelectedClearBedRoom();
+      if (!room || !room.beds[bedIndex]) return;
+      room.beds.splice(bedIndex, 1);
+      renderClearBedBedsModal();
+      renderClearBedManagement();
+      renderCleanBedDashboard();
+    }
+    function saveClearBedBed() {
+      const room = getSelectedClearBedRoom();
+      if (!room) return;
+      const bedCode = normalizeBedCode(room.roomNumber, document.getElementById('clearBedBedCodeInput').value);
+      const bedStatus = document.getElementById('clearBedBedStatusInput').value;
+      if (!bedCode) return;
+      const duplicateBed = room.beds.find((bed, index) => getBedCode(bed) === bedCode && index !== editingClearBedBedIndex);
+      if (duplicateBed) return;
+
+      if (editingClearBedBedIndex >= 0) room.beds.splice(editingClearBedBedIndex, 1, createBedRecord(bedCode, bedStatus));
+      else room.beds.push(createBedRecord(bedCode, bedStatus));
+      sortBeds(room.beds);
+
+      editingClearBedBedIndex = -1;
+      closeModal('clearBedBedModal');
+      renderClearBedBedsModal();
+      renderClearBedManagement();
+      renderCleanBedDashboard();
+    }
+    function goToAnomalyPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getFilteredAnomalies().length / HISTORY_PAGE_SIZE));
+      anomalyPage = Math.min(Math.max(page, 1), totalPages);
+      renderAnomalyDashboard();
+    }
+    function applyAnomalyFilters() {
+      anomalyPage = 1;
+      renderAnomalyDashboard();
+    }
+    function resetAnomalyFilters() {
+      document.getElementById('anomalyDateFilter').value = '';
+      document.getElementById('anomalyCategoryFilter').value = '';
+      document.getElementById('anomalyStatusFilter').value = '';
+      document.getElementById('anomalyKeywordFilter').value = '';
+      anomalyPage = 1;
+      renderAnomalyDashboard();
+    }
+    function renderWorkItemsTable() {
+      const tbody = document.getElementById('workItemsTableBody');
+      const sortedItems = [...getCurrentRoleWorkItems()].sort((a, b) => {
+        const orderCompare = Number(a.order) - Number(b.order);
+        return orderCompare !== 0 ? orderCompare : a.code.localeCompare(b.code);
+      });
+      tbody.innerHTML = sortedItems.length ? sortedItems.map(item => `
+        <tr>
+          <td>${item.code}</td>
+          <td>${item.name}</td>
+          <td>${getWorkItemScopeLabel(item)}</td>
+          <td>${item.category}</td>
+          <td>${item.defaultAssignee}</td>
+          <td>${item.eta} 分鐘</td>
+          <td>${item.priority}</td>
+          <td>${item.receipt}</td>
+          <td>${item.options.join('、') || '-'}</td>
+          <td><span class="${item.status === '啟用' ? 'badge' : 'badge gray'}">${item.status}</span></td>
+          <td><button class="btn light" onclick="openWorkItemEdit('${item.code}')">編輯</button></td>
+        </tr>
+      `).join('') : '<tr><td colspan="11" class="hint">目前沒有可顯示的工作項目</td></tr>';
+    }
+    function renderWorkItemOptionEditor(values = ['']) {
+      const optionValues = values.length ? values : [''];
+      const container = document.getElementById('workItemOptionsList');
+      container.innerHTML = optionValues.map((value, index) => `
+        <div class="option-item">
+          <label>選項${index + 1}</label>
+          <input class="work-item-option-input" value="${value}" placeholder="請輸入欄位名稱" data-index="${index}" />
+          <button type="button" class="option-remove" onclick="removeWorkItemOptionField(${index})">x</button>
+        </div>
+      `).join('');
+    }
+    function addWorkItemOptionField() {
+      const currentValues = Array.from(document.querySelectorAll('.work-item-option-input')).map(input => input.value);
+      currentValues.push('');
+      renderWorkItemOptionEditor(currentValues);
+    }
+    function removeWorkItemOptionField(indexToRemove) {
+      const currentValues = Array.from(document.querySelectorAll('.work-item-option-input')).map(input => input.value);
+      const nextValues = currentValues.filter((_, index) => index !== indexToRemove);
+      renderWorkItemOptionEditor(nextValues.length ? nextValues : ['']);
+    }
+    function getWorkItemOptionValues() {
+      return Array.from(document.querySelectorAll('.work-item-option-input'))
+        .map(input => input.value.trim())
+        .filter(Boolean);
+    }
+    function populateDispatchWorkItems() {
+      const select = document.getElementById('dispatchWorkItemSelect');
+      const enabledItems = getVisibleWorkItemsForAccount(currentDispatchAccountId, false).sort((a, b) => {
+        const orderCompare = Number(a.order) - Number(b.order);
+        return orderCompare !== 0 ? orderCompare : a.code.localeCompare(b.code);
+      });
+      select.innerHTML = enabledItems.map(item => `<option value="${item.code}">${item.name}</option>`).join('');
+      if (!enabledItems.length) {
+        document.getElementById('dispatchOptionField').classList.add('hidden');
+        document.getElementById('dispatchWorkItemOptionSelect').innerHTML = '';
+        return;
+      }
+      updateDispatchOptionField();
+    }
+    function populateDispatchHistoryWorkItemFilter() {
+      const select = document.getElementById('historyWorkItem');
+      const currentValue = select.value;
+      const items = getVisibleWorkItemsForAccount(currentDispatchAccountId).sort((a, b) => {
+        const orderCompare = Number(a.order) - Number(b.order);
+        return orderCompare !== 0 ? orderCompare : a.code.localeCompare(b.code);
+      });
+      select.innerHTML = ['<option value="">全部工作項目</option>']
+        .concat(items.map(item => `<option value="${item.code}">${item.name}</option>`))
+        .join('');
+      if ([...select.options].some(option => option.value === currentValue)) select.value = currentValue;
+    }
+    function populateCenterTaskWorkItemFilter() {
+      const select = document.getElementById('centerTaskWorkItemFilter');
+      const currentValue = select.value;
+      select.innerHTML = ['<option value="">全部工作項目</option>']
+        .concat(workItems.map(item => `<option value="${item.code}">${getWorkItemSelectLabel(item)}</option>`))
+        .join('');
+      if ([...select.options].some(option => option.value === currentValue)) select.value = currentValue;
+    }
+    function updateDispatchOptionField() {
+      const selectedItem = getWorkItemByCode(document.getElementById('dispatchWorkItemSelect').value);
+      const optionField = document.getElementById('dispatchOptionField');
+      const optionSelect = document.getElementById('dispatchWorkItemOptionSelect');
+      if (!selectedItem || !selectedItem.options.length) {
+        optionField.classList.add('hidden');
+        optionSelect.innerHTML = '';
+        return;
+      }
+      optionField.classList.remove('hidden');
+      optionSelect.innerHTML = selectedItem.options.map(option => `<option value="${option}">${option}</option>`).join('');
+    }
+    function openWorkItemCreate() {
+      editingWorkItemCode = '';
+      document.getElementById('workItemModalTitle').textContent = '新增工作項目';
+      document.getElementById('workItemCode').value = '';
+      document.getElementById('workItemName').value = '';
+      populateWorkItemScopeOptions(currentRole === 'dispatch' ? `ward:${getCurrentDispatchAccount().id}` : 'shared');
+      document.getElementById('workItemCategory').value = '病患傳送';
+      document.getElementById('workItemAssignee').value = '傳送中心';
+      document.getElementById('workItemEta').value = '';
+      document.getElementById('workItemPriority').value = '一般';
+      document.getElementById('workItemReceipt').value = '需要';
+      renderWorkItemOptionEditor(['']);
+      document.getElementById('workItemStatus').value = '啟用';
+      document.getElementById('workItemOrder').value = '';
+      document.getElementById('workItemNotes').value = '';
+      openModal('workItemModal');
+    }
+    function openWorkItemEdit(code) {
+      const item = getWorkItemByCode(code);
+      if (!item) return;
+      editingWorkItemCode = code;
+      document.getElementById('workItemModalTitle').textContent = '編輯工作項目';
+      document.getElementById('workItemCode').value = item.code;
+      document.getElementById('workItemName').value = item.name;
+      populateWorkItemScopeOptions(item.scope === 'shared' ? 'shared' : `ward:${item.wardAccountId}`);
+      document.getElementById('workItemCategory').value = item.category;
+      document.getElementById('workItemAssignee').value = item.defaultAssignee;
+      document.getElementById('workItemEta').value = item.eta;
+      document.getElementById('workItemPriority').value = item.priority;
+      document.getElementById('workItemReceipt').value = item.receipt;
+      renderWorkItemOptionEditor(item.options);
+      document.getElementById('workItemStatus').value = item.status;
+      document.getElementById('workItemOrder').value = item.order;
+      document.getElementById('workItemNotes').value = item.notes;
+      openModal('workItemModal');
+    }
+    function saveWorkItem() {
+      const scopeValue = document.getElementById('workItemScope').value;
+      const isShared = scopeValue === 'shared';
+      const newItem = {
+        code: document.getElementById('workItemCode').value.trim(),
+        name: document.getElementById('workItemName').value.trim(),
+        scope: isShared ? 'shared' : 'ward',
+        wardAccountId: isShared ? '' : scopeValue.replace('ward:', ''),
+        category: document.getElementById('workItemCategory').value,
+        defaultAssignee: document.getElementById('workItemAssignee').value,
+        eta: document.getElementById('workItemEta').value.trim() || '0',
+        priority: document.getElementById('workItemPriority').value,
+        receipt: document.getElementById('workItemReceipt').value,
+        options: getWorkItemOptionValues(),
+        status: document.getElementById('workItemStatus').value,
+        order: document.getElementById('workItemOrder').value.trim() || '99',
+        notes: document.getElementById('workItemNotes').value.trim()
+      };
+      if (!newItem.code || !newItem.name) return;
+
+      const existingIndex = workItems.findIndex(item => item.code === editingWorkItemCode || item.code === newItem.code);
+      if (existingIndex >= 0) workItems.splice(existingIndex, 1, newItem);
+      else workItems.push(newItem);
+
+      closeModal('workItemModal');
+      renderWorkItemsTable();
+      populateDispatchWorkItems();
+      populateDispatchHistoryWorkItemFilter();
+    }
+    function renderPorterPage() {
+      renderPorterStationFilters();
+      const visibleTasks = getPorterDashboardVisibleTaskRecords();
+      const pendingTasks = visibleTasks.filter(record => record.status === '已派工');
+      const inProgressTasks = visibleTasks.filter(record => record.status === '進行中');
+      document.getElementById('porterPendingCount').textContent = pendingTasks.length;
+      document.getElementById('porterAcceptedCount').textContent = inProgressTasks.length;
+      document.getElementById('porterInquiryCount').textContent = getPorterDashboardPendingInquiries().length;
+
+      document.getElementById('porterPendingTaskTableBody').innerHTML = pendingTasks.length
+        ? pendingTasks.map(record => `
+            <tr>
+              <td>${record.priority}</td>
+              <td>${getWardDisplayName(record.sourceWard)}</td>
+              <td>${record.workItem}${record.selectedOption ? ` / ${record.selectedOption}` : ''}</td>
+              <td>${record.time}</td>
+              <td>${record.id}</td>
+              <td><button class="btn light" onclick="startPorterTask('${record.id}')">開始執行</button></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="6" class="hint">目前沒有已派工任務</td></tr>';
+
+      document.getElementById('porterInProgressTaskTableBody').innerHTML = inProgressTasks.length
+        ? inProgressTasks.map(record => `
+            <tr>
+              <td>${record.priority}</td>
+              <td>${getWardDisplayName(record.sourceWard)}</td>
+              <td>${record.workItem}${record.selectedOption ? ` / ${record.selectedOption}` : ''}</td>
+              <td>${record.time}</td>
+              <td>${record.id}</td>
+              <td><button class="btn light" onclick="completePorterTask('${record.id}')">完成任務</button></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="6" class="hint">目前沒有進行中任務</td></tr>';
+
+      const pendingInquiries = getPorterDashboardPendingInquiries();
+      document.getElementById('porterInquiryTableBody').innerHTML = pendingInquiries.length
+        ? pendingInquiries.map(item => {
+            const record = getRecordById(item.recordId);
+            return `
+              <tr>
+                <td>${item.recordId}</td>
+                <td>${record ? record.workItem : '-'}</td>
+                <td>${item.date} ${item.time}</td>
+                <td><span class="badge red">${item.status}</span></td>
+                <td><button class="btn light" onclick="openReplyModal('${item.id}')">回覆</button></td>
+              </tr>
+            `;
+          }).join('')
+        : '<tr><td colspan="5" class="hint">目前沒有待回覆的進度詢問</td></tr>';
+
+      const porterAnomalies = getPorterDashboardAnomalies().sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`)).slice(0, 10);
+      document.getElementById('porterAnomalyTableBody').innerHTML = porterAnomalies.length
+        ? porterAnomalies.map(item => `
+            <tr>
+              <td>${item.recordId}</td>
+              <td>${item.category}</td>
+              <td>${item.notes}</td>
+              <td><span class="${item.status === '已結案' ? 'badge blue' : 'badge red'}">${item.status}</span></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="4" class="hint">本月尚無異常回報</td></tr>';
+    }
+    function startPorterTask(recordId) {
+      const record = getRecordById(recordId);
+      if (!record || record.status !== '已派工') return;
+      record.status = '進行中';
+      record.acceptedAt = `${RECORD_DATE} ${getCurrentActionTime()}`;
+      refreshOperationalViews();
+    }
+    function completePorterTask(recordId) {
+      const record = getRecordById(recordId);
+      if (!record || record.status !== '進行中') return;
+      record.status = '已完成';
+      record.completedAt = `${RECORD_DATE} ${getCurrentActionTime()}`;
+      refreshOperationalViews();
+    }
+    function getPorterVisibleTaskRecords() {
+      return dispatchHistoryRecords.filter(record => record.employeeName !== '無');
+    }
+    function getFilteredPorterAnomalyRecords() {
+      const date = document.getElementById('porterAnomalyDateFilter').value;
+      const category = document.getElementById('porterAnomalyCategoryFilter').value;
+      const status = document.getElementById('porterAnomalyStatusFilter').value;
+      const keyword = document.getElementById('porterAnomalyKeywordFilter').value.trim();
+
+      return anomalyReports.filter(report => {
+        const record = getRecordById(report.recordId);
+        if (!record || record.employeeName === '無') return false;
+        if (date && report.date !== date) return false;
+        if (category && report.category !== category) return false;
+        if (status && report.status !== status) return false;
+        if (keyword && !`${report.recordId} ${record.workItem} ${report.notes}`.includes(keyword)) return false;
+        return true;
+      }).sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+    }
+    function renderPorterAnomalyRecords() {
+      const records = getFilteredPorterAnomalyRecords();
+      const totalPages = Math.max(1, Math.ceil(records.length / HISTORY_PAGE_SIZE));
+      if (porterAnomalyRecordsPage > totalPages) porterAnomalyRecordsPage = totalPages;
+      const startIndex = (porterAnomalyRecordsPage - 1) * HISTORY_PAGE_SIZE;
+      const currentPageRecords = records.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+      document.getElementById('porterAnomalyRecordsTableBody').innerHTML = currentPageRecords.length
+        ? currentPageRecords.map(report => {
+            const record = getRecordById(report.recordId);
+            return `
+              <tr>
+                <td>${report.recordId}</td>
+                <td>${report.date}</td>
+                <td>${report.time}</td>
+                <td>${record ? record.workItem : '-'}</td>
+                <td>${report.category}</td>
+                <td>${report.notes}</td>
+                <td><span class="${report.status === '已結案' ? 'badge blue' : 'badge red'}">${report.status}</span></td>
+              </tr>
+            `;
+          }).join('')
+        : '<tr><td colspan="7" class="hint">目前沒有符合條件的異常紀錄</td></tr>';
+      document.getElementById('porterAnomalyRecordsPageInfo').textContent = `第 ${porterAnomalyRecordsPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('porterAnomalyRecordsPagination', porterAnomalyRecordsPage, totalPages, goToPorterAnomalyRecordsPage);
+    }
+    function goToPorterAnomalyRecordsPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getFilteredPorterAnomalyRecords().length / HISTORY_PAGE_SIZE));
+      porterAnomalyRecordsPage = Math.min(Math.max(page, 1), totalPages);
+      renderPorterAnomalyRecords();
+    }
+    function applyPorterAnomalyFilters() {
+      porterAnomalyRecordsPage = 1;
+      renderPorterAnomalyRecords();
+    }
+    function resetPorterAnomalyFilters() {
+      document.getElementById('porterAnomalyDateFilter').value = '';
+      document.getElementById('porterAnomalyCategoryFilter').value = '';
+      document.getElementById('porterAnomalyStatusFilter').value = '';
+      document.getElementById('porterAnomalyKeywordFilter').value = '';
+      porterAnomalyRecordsPage = 1;
+      renderPorterAnomalyRecords();
+    }
+    function getFilteredPorterTaskRecords() {
+      const date = document.getElementById('porterTaskDateFilter').value;
+      const timeFrom = document.getElementById('porterTaskTimeFromFilter').value;
+      const timeTo = document.getElementById('porterTaskTimeToFilter').value;
+      const workItem = document.getElementById('porterTaskWorkItemFilter').value;
+      const ward = document.getElementById('porterTaskWardFilter').value;
+      const status = document.getElementById('porterTaskStatusFilter').value;
+      const employeeId = document.getElementById('porterTaskEmployeeFilter').value;
+      const keyword = document.getElementById('porterTaskKeywordFilter').value.trim();
+
+      return getPorterVisibleTaskRecords().filter(record => {
+        if (date && record.date !== date) return false;
+        if (timeFrom && record.time < timeFrom) return false;
+        if (timeTo && record.time > timeTo) return false;
+        if (workItem && record.workItemCode !== workItem) return false;
+        if (ward && getWardFilterValue(record.sourceWard) !== ward) return false;
+        if (status && record.status !== status) return false;
+        if (employeeId && record.employeeId !== employeeId) return false;
+        if (keyword && !`${record.id} ${record.workItem} ${record.selectedOption} ${record.employeeName} ${getWardDisplayName(record.sourceWard)}`.includes(keyword)) return false;
+        return true;
+      });
+    }
+    function renderPorterTaskRecords() {
+      const records = getFilteredPorterTaskRecords();
+      const totalPages = Math.max(1, Math.ceil(records.length / HISTORY_PAGE_SIZE));
+      if (porterTaskRecordsPage > totalPages) porterTaskRecordsPage = totalPages;
+      const startIndex = (porterTaskRecordsPage - 1) * HISTORY_PAGE_SIZE;
+      const currentPageRecords = records.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+      document.getElementById('porterTaskRecordsTableBody').innerHTML = currentPageRecords.length
+        ? currentPageRecords.map(record => `
+            <tr>
+              <td>${record.id}</td>
+              <td>${record.date}</td>
+              <td>${record.time}</td>
+              <td>${getWardDisplayName(record.sourceWard)}</td>
+              <td>${record.workItem}${record.selectedOption ? ` / ${record.selectedOption}` : ''}</td>
+              <td>${record.employeeName}</td>
+              <td>${record.priority}</td>
+              <td><span class="${getStatusBadgeClass(record.status)}">${record.status}</span></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="8" class="hint">目前沒有符合條件的任務紀錄</td></tr>';
+      document.getElementById('porterTaskRecordsPageInfo').textContent = `第 ${porterTaskRecordsPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('porterTaskRecordsPagination', porterTaskRecordsPage, totalPages, goToPorterTaskRecordsPage);
+    }
+    function goToPorterTaskRecordsPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getFilteredPorterTaskRecords().length / HISTORY_PAGE_SIZE));
+      porterTaskRecordsPage = Math.min(Math.max(page, 1), totalPages);
+      renderPorterTaskRecords();
+    }
+    function applyPorterTaskFilters() {
+      porterTaskRecordsPage = 1;
+      renderPorterTaskRecords();
+    }
+    function resetPorterTaskFilters() {
+      document.getElementById('porterTaskDateFilter').value = '';
+      document.getElementById('porterTaskTimeFromFilter').value = '';
+      document.getElementById('porterTaskTimeToFilter').value = '';
+      document.getElementById('porterTaskWorkItemFilter').value = '';
+      document.getElementById('porterTaskWardFilter').value = '';
+      document.getElementById('porterTaskStatusFilter').value = '';
+      document.getElementById('porterTaskEmployeeFilter').value = '';
+      document.getElementById('porterTaskKeywordFilter').value = '';
+      porterTaskRecordsPage = 1;
+      renderPorterTaskRecords();
+    }
+    function renderPeopleManagement() {
+      const keyword = document.getElementById('peopleSearchInput').value.trim();
+      const filteredEmployees = employees.filter(employee => {
+        if (!keyword) return true;
+        return `${employee.name} ${employee.account} ${employee.phone}`.includes(keyword);
+      });
+      document.getElementById('peopleManagementTableBody').innerHTML = filteredEmployees.map(employee => `
+        <tr>
+          <td>${employee.name}</td>
+          <td>${employee.account}</td>
+          <td>${employee.phone}</td>
+          <td><span class="${employee.enabled ? 'badge' : 'badge gray'}">${employee.enabled ? '啟用' : '停用'}</span></td>
+          <td>${getEmployeeDutyStatus(employee)}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn light" onclick="toggleEmployeeEnabled('${employee.id}')">${employee.enabled ? '停用帳號' : '啟用帳號'}</button>
+              <button class="btn light" onclick="resetEmployeePassword('${employee.id}')">重設密碼</button>
+              <button class="btn light" onclick="openEmployeeTaskDashboard('${employee.id}')">查看任務</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    function resetPeopleSearch() {
+      document.getElementById('peopleSearchInput').value = '';
+      renderPeopleManagement();
+    }
+    function populateCenterTaskEmployeeFilter() {
+      const select = document.getElementById('centerTaskEmployeeFilter');
+      const currentValue = select.value;
+      select.innerHTML = ['<option value="">全部員工</option>', '<option value="__unassigned__">未指派</option>']
+        .concat(employees.filter(employee => employee.enabled).map(employee => `<option value="${employee.id}">${employee.name}</option>`))
+        .join('');
+      if ([...select.options].some(option => option.value === currentValue)) select.value = currentValue;
+    }
+    function populatePorterTaskFilters() {
+      const workItemSelect = document.getElementById('porterTaskWorkItemFilter');
+      const currentWorkItem = workItemSelect.value;
+      workItemSelect.innerHTML = ['<option value="">全部工作項目</option>']
+        .concat(workItems.map(item => `<option value="${item.code}">${getWorkItemSelectLabel(item)}</option>`))
+        .join('');
+      if ([...workItemSelect.options].some(option => option.value === currentWorkItem)) workItemSelect.value = currentWorkItem;
+
+      const employeeSelect = document.getElementById('porterTaskEmployeeFilter');
+      const currentEmployee = employeeSelect.value;
+      employeeSelect.innerHTML = ['<option value="">全部員工</option>']
+        .concat(employees.filter(employee => employee.enabled).map(employee => `<option value="${employee.id}">${employee.name}</option>`))
+        .join('');
+      if ([...employeeSelect.options].some(option => option.value === currentEmployee)) employeeSelect.value = currentEmployee;
+    }
+    function toggleEmployeeEnabled(employeeId) {
+      const employee = getEmployeeById(employeeId);
+      if (!employee) return;
+      employee.enabled = !employee.enabled;
+      refreshOperationalViews();
+    }
+    function resetEmployeePassword(employeeId) {
+      const employee = getEmployeeById(employeeId);
+      if (!employee) return;
+      employee.lastReset = `${RECORD_DATE} ${getCurrentActionTime()}`;
+      renderPeopleManagement();
+    }
+    function getCenterTaskRecords() {
+      const activeRecords = dispatchHistoryRecords.filter(record => ['已派工', '進行中'].includes(record.status));
+      const date = document.getElementById('centerTaskDateFilter').value;
+      const timeFrom = document.getElementById('centerTaskTimeFromFilter').value;
+      const timeTo = document.getElementById('centerTaskTimeToFilter').value;
+      const workItem = document.getElementById('centerTaskWorkItemFilter').value;
+      const ward = document.getElementById('centerTaskWardFilter').value;
+      const status = document.getElementById('centerTaskStatusFilter').value;
+      const employeeFilter = document.getElementById('centerTaskEmployeeFilter').value;
+      const keyword = document.getElementById('centerTaskKeywordFilter').value.trim();
+      return activeRecords.filter(record => {
+        if (selectedEmployeeTaskId && record.employeeId !== selectedEmployeeTaskId) return false;
+        if (date && record.date !== date) return false;
+        if (timeFrom && record.time < timeFrom) return false;
+        if (timeTo && record.time > timeTo) return false;
+        if (workItem && record.workItemCode !== workItem) return false;
+        if (ward && getWardFilterValue(record.sourceWard) !== ward) return false;
+        if (status && record.status !== status) return false;
+        if (employeeFilter === '__unassigned__' && record.employeeId) return false;
+        if (employeeFilter && employeeFilter !== '__unassigned__' && record.employeeId !== employeeFilter) return false;
+        if (keyword && !`${record.id} ${record.workItem} ${getWardDisplayName(record.sourceWard)} ${record.employeeName} ${record.selectedOption}`.includes(keyword)) return false;
+        return true;
+      });
+    }
+    function renderCenterTaskDashboard() {
+      const records = getCenterTaskRecords();
+      const employee = selectedEmployeeTaskId ? getEmployeeById(selectedEmployeeTaskId) : null;
+      document.getElementById('centerTaskDashboardTitle').textContent = employee ? `${employee.name} 任務儀表板` : '任務儀表板';
+      document.getElementById('centerTaskDashboardBack').classList.toggle('hidden', !employee);
+      document.getElementById('centerTaskActiveCount').textContent = records.length;
+      document.getElementById('centerTaskAssignedCount').textContent = records.filter(record => record.status === '已派工').length;
+      document.getElementById('centerTaskInProgressCount').textContent = records.filter(record => record.status === '進行中').length;
+      const totalPages = Math.max(1, Math.ceil(records.length / CENTER_TASK_PAGE_SIZE));
+      if (centerTaskPage > totalPages) centerTaskPage = totalPages;
+      const startIndex = (centerTaskPage - 1) * CENTER_TASK_PAGE_SIZE;
+      const currentPageRecords = records.slice(startIndex, startIndex + CENTER_TASK_PAGE_SIZE);
+      document.getElementById('centerTaskDashboardTableBody').innerHTML = currentPageRecords.length
+        ? currentPageRecords.map(record => `
+            <tr>
+              <td>${record.id}</td>
+              <td>${record.date}</td>
+              <td>${getWardDisplayName(record.sourceWard)}</td>
+              <td>${record.time}</td>
+              <td>${record.workItem}${record.selectedOption ? ` / ${record.selectedOption}` : ''}</td>
+              <td>${record.employeeName}</td>
+              <td>${record.priority}</td>
+              <td><span class="${getStatusBadgeClass(record.status)}">${record.status}</span></td>
+              <td>${getAnomalyCount(record.id)}</td>
+              <td>${record.employeeName === '無' ? `<button class="btn light" onclick="openAssignEmployeeModal('${record.id}')">指派員工</button>` : '<span class="hint">已指派</span>'}</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="10" class="hint">目前沒有符合條件的即時任務</td></tr>';
+      document.getElementById('centerTaskPageInfo').textContent = `第 ${centerTaskPage} 頁 / 共 ${totalPages} 頁`;
+      renderPagination('centerTaskPagination', centerTaskPage, totalPages, goToCenterTaskPage);
+    }
+    function goToCenterTaskPage(page) {
+      const totalPages = Math.max(1, Math.ceil(getCenterTaskRecords().length / CENTER_TASK_PAGE_SIZE));
+      centerTaskPage = Math.min(Math.max(page, 1), totalPages);
+      renderCenterTaskDashboard();
+    }
+    function openEmployeeTaskDashboard(employeeId) {
+      selectedEmployeeTaskId = employeeId;
+      document.getElementById('centerTaskEmployeeFilter').value = employeeId;
+      showPage('centerTaskDashboard');
+      centerTaskPage = 1;
+      renderCenterTaskDashboard();
+    }
+    function openAllCenterTasks() {
+      selectedEmployeeTaskId = '';
+      document.getElementById('centerTaskEmployeeFilter').value = '';
+      showPage('centerTaskDashboard');
+      centerTaskPage = 1;
+      renderCenterTaskDashboard();
+    }
+    function clearEmployeeTaskDashboard() {
+      selectedEmployeeTaskId = '';
+      document.getElementById('centerTaskEmployeeFilter').value = '';
+      centerTaskPage = 1;
+      renderCenterTaskDashboard();
+    }
+    function applyCenterTaskFilters() {
+      centerTaskPage = 1;
+      renderCenterTaskDashboard();
+    }
+    function resetCenterTaskFilters() {
+      document.getElementById('centerTaskDateFilter').value = '';
+      document.getElementById('centerTaskTimeFromFilter').value = '';
+      document.getElementById('centerTaskTimeToFilter').value = '';
+      document.getElementById('centerTaskWorkItemFilter').value = '';
+      document.getElementById('centerTaskWardFilter').value = '';
+      document.getElementById('centerTaskStatusFilter').value = '';
+      document.getElementById('centerTaskEmployeeFilter').value = '';
+      document.getElementById('centerTaskKeywordFilter').value = '';
+      selectedEmployeeTaskId = '';
+      centerTaskPage = 1;
+      renderCenterTaskDashboard();
+    }
+    function renderDutyEmployeeManagement() {
+      document.getElementById('dutyEmployeeTableBody').innerHTML = employees.filter(employee => employee.enabled && employee.onDuty).map(employee => {
+        const stats = getEmployeeLiveStats(employee.id);
+        return `
+          <tr>
+            <td>${employee.name}</td>
+            <td>${stats.activeCount}</td>
+            <td>${stats.inProgressCount}</td>
+            <td>${stats.anomalyCount}</td>
+            <td>${getEmployeeDutyStatus(employee)}</td>
+            <td><button class="btn light" onclick="openEmployeeTaskDashboard('${employee.id}')">查看任務</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+    function renderAssignEmployeeModal() {
+      const currentDutyEmployees = employees.filter(employee => employee.enabled && employee.onDuty);
+      document.getElementById('assignEmployeeTableBody').innerHTML = currentDutyEmployees.length
+        ? currentDutyEmployees.map(employee => {
+            const stats = getEmployeeLiveStats(employee.id);
+            return `
+              <tr>
+                <td>${employee.name}</td>
+                <td>${stats.assignedCount}</td>
+                <td>${getLastCompletedTime(employee.id)}</td>
+                <td>${getLastAcceptedTime(employee.id)}</td>
+                <td>${getEmployeeDutyStatus(employee)}</td>
+                <td><button class="btn light" onclick="assignTaskToEmployee('${employee.id}')">指派</button></td>
+              </tr>
+            `;
+          }).join('')
+        : '<tr><td colspan="6" class="hint">目前沒有執勤中的員工</td></tr>';
+    }
+    function openAssignEmployeeModal(recordId) {
+      selectedAssignmentRecordId = recordId;
+      renderAssignEmployeeModal();
+      openModal('assignEmployeeModal');
+    }
+    function assignTaskToEmployee(employeeId) {
+      const record = getRecordById(selectedAssignmentRecordId);
+      const employee = getEmployeeById(employeeId);
+      if (!record || !employee) return;
+      record.employeeId = employee.id;
+      record.employeeName = employee.name;
+      record.acceptedAt = `${RECORD_DATE} ${getCurrentActionTime()}`;
+      selectedAssignmentRecordId = '';
+      closeModal('assignEmployeeModal');
+      refreshOperationalViews();
+    }
+    function createDispatchRecord() {
+      const workItem = getWorkItemByCode(document.getElementById('dispatchWorkItemSelect').value);
+      if (!workItem) return;
+
+      const assignee = document.getElementById('dispatchAssignee').value;
+      const sourceWard = currentRole === 'dispatch'
+        ? getDefaultDispatchSourceWard()
+        : document.getElementById('dispatchSourceWard').value;
+      const priority = document.getElementById('dispatchPriority').value;
+      const isImmediate = document.getElementById('dispatchImmediate').checked;
+      const scheduledTime = isImmediate ? getCurrentActionTime() : document.getElementById('dispatchScheduledTime').value || getNextDispatchTime();
+      const defaultEmployee = employees.find(employee => employee.enabled && employee.onDuty) || null;
+      const nextSequence = String(dispatchHistoryRecords.length + 1).padStart(3, '0');
+
+      dispatchHistoryRecords.unshift({
+        id: `WO-20260520-${nextSequence}`,
+        date: RECORD_DATE,
+        time: scheduledTime,
+        workItem: workItem.name,
+        workItemCode: workItem.code,
+        assignee,
+        priority,
+        status: '已派工',
+        employeeId: assignee === '傳送中心' ? '' : (defaultEmployee ? defaultEmployee.id : ''),
+        employeeName: assignee === '傳送中心' ? '無' : (defaultEmployee ? defaultEmployee.name : '無'),
+        selectedOption: document.getElementById('dispatchWorkItemOptionSelect').value || '',
+        sourceWard,
+        acceptedAt: assignee === '傳送中心' ? '' : `${RECORD_DATE} ${scheduledTime}`,
+        completedAt: ''
+      });
+
+      closeModal('dispatchModal');
+      dispatchHistoryPage = 1;
+      listModalPage = 1;
+      centerTaskPage = 1;
+      refreshOperationalViews();
+    }
+    function refreshOperationalViews() {
+      updateSessionLabels();
+      populateDispatchSourceWardOptions();
+      syncDispatchSourceWardField();
+      populateDispatchHistoryWorkItemFilter();
+      populateDispatchWorkItems();
+      renderDashboardStats();
+      renderClearBedStatusFilters();
+      renderClearBedManagement();
+      renderCleanBedDashboard();
+      renderDispatchHistory();
+      renderListModal();
+      renderAnomalyDashboard();
+      renderPorterPage();
+      populatePorterTaskFilters();
+      renderPorterAnomalyRecords();
+      renderPorterTaskRecords();
+      populateCenterTaskEmployeeFilter();
+      populateCenterTaskWorkItemFilter();
+      renderPeopleManagement();
+      renderCenterTaskDashboard();
+      renderDutyEmployeeManagement();
+      renderWorkItemsTable();
+    }
+    function cancelDispatch(recordId) {
+      const record = getRecordById(recordId);
+      if (!record || record.status !== '已派工') return;
+      record.status = '已取消';
+      refreshOperationalViews();
+    }
+    function askProgress(recordId) {
+      progressInquiries.unshift({
+        id: `IQ-${String(progressInquiries.length + 1).padStart(3, '0')}`,
+        recordId,
+        date: RECORD_DATE,
+        time: getCurrentActionTime(),
+        status: '待回覆',
+        replyText: ''
+      });
+      refreshOperationalViews();
+    }
+    function openAnomalyModal(recordId) {
+      selectedRecordId = recordId;
+      document.getElementById('anomalyCategoryInput').value = '人力不足';
+      document.getElementById('anomalyNotesInput').value = '';
+      openModal('anomalyModal');
+    }
+    function submitAnomalyReport() {
+      if (!selectedRecordId) return;
+      anomalyReports.unshift({
+        id: `AB-${String(anomalyReports.length + 1).padStart(3, '0')}`,
+        recordId: selectedRecordId,
+        date: RECORD_DATE,
+        time: getCurrentActionTime(),
+        category: document.getElementById('anomalyCategoryInput').value,
+        notes: document.getElementById('anomalyNotesInput').value.trim() || '未填寫備註',
+        status: '待處理'
+      });
+      closeModal('anomalyModal');
+      selectedRecordId = '';
+      refreshOperationalViews();
+    }
+    function openReplyModal(inquiryId) {
+      selectedInquiryId = inquiryId;
+      document.getElementById('replyTextInput').value = '';
+      openModal('replyModal');
+    }
+    function submitProgressReply() {
+      const inquiry = progressInquiries.find(item => item.id === selectedInquiryId);
+      if (!inquiry) return;
+      inquiry.status = '已回覆';
+      inquiry.replyText = document.getElementById('replyTextInput').value.trim() || '已收到，現場處理中。';
+      closeModal('replyModal');
+      selectedInquiryId = '';
+      refreshOperationalViews();
+    }
+    function isMobileViewport() {
+      return window.matchMedia('(max-width: 1180px)').matches;
+    }
+    function syncSidebarUi(isOpen) {
+      const sidebar = document.getElementById('sidebar');
+      const scrim = document.getElementById('sidebarScrim');
+      const menuButton = document.getElementById('menuToggleButton');
+      if (!sidebar || !scrim || !menuButton) return;
+
+      document.body.classList.toggle('sidebar-open', isOpen);
+      sidebar.classList.toggle('open', isOpen);
+      scrim.classList.toggle('show', isOpen);
+      menuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById('sidebar');
+      const scrim = document.getElementById('sidebarScrim');
+      if (!sidebar || !scrim) return;
+
+      if (!isMobileViewport()) {
+        syncSidebarUi(false);
+        return;
+      }
+
+      const nextState = typeof forceState === 'boolean'
+        ? forceState
+        : !sidebar.classList.contains('open');
+
+      syncSidebarUi(nextState);
+    }
+    function syncResponsiveShell() {
+      if (!isMobileViewport()) {
+        syncSidebarUi(false);
+        return;
+      }
+      const sidebar = document.getElementById('sidebar');
+      syncSidebarUi(sidebar ? sidebar.classList.contains('open') : false);
+    }
+    function bindResponsiveShellEvents() {
+      const menuButton = document.getElementById('menuToggleButton');
+      const scrim = document.getElementById('sidebarScrim');
+      if (menuButton && !menuButton.dataset.boundSidebarToggle) {
+        menuButton.addEventListener('click', () => toggleSidebar());
+        menuButton.dataset.boundSidebarToggle = 'true';
+      }
+      if (scrim && !scrim.dataset.boundSidebarToggle) {
+        scrim.addEventListener('click', () => toggleSidebar(false));
+        scrim.dataset.boundSidebarToggle = 'true';
+      }
+    }
+    function resetViewportToTop() {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+    function showLogin() {
+      toggleSidebar(false);
+      document.body.classList.remove('app-authenticated');
+      document.body.classList.add('logged-out');
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('headerActions').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+      resetViewportToTop();
+    }
+    function showApp() {
+      toggleSidebar(false);
+      document.body.classList.remove('logged-out');
+      document.body.classList.add('app-authenticated');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('headerActions').classList.remove('hidden');
+      resetViewportToTop();
+    }
+    function resolveSessionKeyFromLoginAccount() {
+      const accountInput = document.getElementById('loginAccountInput');
+      const rawValue = accountInput ? accountInput.value.trim() : '';
+      const normalizedValue = rawValue.toLowerCase().replace(/\s+/g, '');
+      if (!normalizedValue) return 'dispatch3';
+      const directMap = {
+        dispatch3: 'dispatch3',
+        dispatch5: 'dispatch5',
+        cleaner: 'cleaner',
+        porter: 'porter',
+        center: 'center',
+        'a3病房': 'dispatch3',
+        'a5病房': 'dispatch5',
+        '3樓病房': 'dispatch3',
+        '5樓病房': 'dispatch5',
+        '清床人員': 'cleaner',
+        '清潔人員': 'cleaner',
+        '傳送人員': 'porter',
+        '接單單位': 'porter',
+        '傳送中心': 'center',
+        '管理單位': 'center'
+      };
+      if (directMap[normalizedValue]) return directMap[normalizedValue];
+      if (rawValue.includes('清床') || rawValue.includes('清潔')) return 'cleaner';
+      if (rawValue.includes('傳送中心') || rawValue.includes('管理') || rawValue.includes('中心')) return 'center';
+      if (rawValue.includes('傳送人員') || rawValue.includes('接單')) return 'porter';
+      if (rawValue.includes('A5') || rawValue.includes('a5') || rawValue.includes('5樓')) return 'dispatch5';
+      if (rawValue.includes('A3') || rawValue.includes('a3') || rawValue.includes('3樓') || rawValue.includes('病房')) return 'dispatch3';
+      return 'dispatch3';
+    }
+    function login(sessionKey) {
+      const resolvedSessionKey = typeof sessionKey === 'string'
+        ? sessionKey
+        : resolveSessionKeyFromLoginAccount();
+      const sessionMap = {
+        dispatch: { role: 'dispatch', dispatchAccountId: 'ward3' },
+        dispatch3: { role: 'dispatch', dispatchAccountId: 'ward3' },
+        dispatch5: { role: 'dispatch', dispatchAccountId: 'ward5' },
+        cleaner: { role: 'cleaner' },
+        porter: { role: 'porter' },
+        center: { role: 'center' }
+      };
+      const session = sessionMap[resolvedSessionKey] || sessionMap.dispatch3;
+      currentRole = session.role;
+      if (session.role === 'porter') {
+        selectedPorterStationAccounts.clear();
+        dispatchAccounts.forEach(account => selectedPorterStationAccounts.add(account.id));
+      }
+      if (session.role === 'cleaner' || session.role === 'center') {
+        cleanerWardFilter = 'all';
+        cleanerStatusView = 'all';
+      }
+      if (session.dispatchAccountId) currentDispatchAccountId = session.dispatchAccountId;
+      showApp();
+      refreshOperationalViews();
+      switchRole(currentRole);
+    }
+    function logout() {
+      showLogin();
+    }
+    function quickLogin(role) {
+      login(role);
+    }
+    function getAllowedPagesByRole(role) {
+      const rolePageMap = {
+        dispatch: ['dashboard', 'dispatchHistory', 'clearBedManagement', 'anomalyDashboard', 'workItems'],
+        cleaner: ['cleanBedDashboard'],
+        porter: ['porterTasks', 'porterAnomalyRecords', 'porterTaskRecords'],
+        center: ['peopleManagement', 'centerTaskDashboard', 'workItems', 'dutyEmployeeManagement', 'qrCodeManagement', 'anomalyDashboard', 'cleanBedDashboard', 'environmentInspection', 'serviceSurvey', 'robotManagement', 'trainingDatabase', 'hrManagement', 'schedulingSystem', 'payrollSystem']
+      };
+      return rolePageMap[role] || rolePageMap.dispatch;
+    }
+    function getDefaultPageByRole(role) {
+      const defaultPageMap = {
+        dispatch: 'dashboard',
+        cleaner: 'cleanBedDashboard',
+        porter: 'porterTasks',
+        center: 'centerTaskDashboard'
+      };
+      return defaultPageMap[role] || 'dashboard';
+    }
+    function switchRole(role) {
+      updateNavigationByRole(role);
+      syncResponsiveShell();
+      showPage(getDefaultPageByRole(role), true);
+    }
+    function showPage(page, skipRoleGuard = false) {
+      const allowedPages = getAllowedPagesByRole(currentRole);
+      if (!skipRoleGuard && !allowedPages.includes(page)) {
+        page = getDefaultPageByRole(currentRole);
+      }
+      toggleSidebar(false);
+      ['dashboardPage','dispatchHistoryPage','clearBedManagementPage','cleanBedDashboardPage','anomalyDashboardPage','workItemsPage','porterTasksPage','porterAnomalyRecordsPage','porterTaskRecordsPage','peopleManagementPage','centerTaskDashboardPage','dutyEmployeeManagementPage','qrCodeManagementPage','environmentInspectionPage','serviceSurveyPage','robotManagementPage','trainingDatabasePage','hrManagementPage','schedulingSystemPage','payrollSystemPage'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(page + 'Page').classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll(`.nav-item[data-page="${page}"]`).forEach(item => item.classList.add('active'));
+      resetViewportToTop();
+    }
+    function getNextDispatchTime() {
+      const now = new Date();
+      now.setSeconds(0, 0);
+      const nextMinutes = Math.ceil((now.getMinutes() + 1) / 15) * 15;
+      now.setMinutes(nextMinutes);
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+    function toggleImmediateDispatch() {
+      const isImmediate = document.getElementById('dispatchImmediate').checked;
+      document.getElementById('dispatchScheduledTime').disabled = isImmediate;
+    }
+    function initializeDispatchTime() {
+      document.getElementById('dispatchScheduledTime').value = getNextDispatchTime();
+      document.getElementById('dispatchImmediate').checked = true;
+      document.getElementById('dispatchAssignee').value = '傳送中心';
+      populateDispatchSourceWardOptions();
+      syncDispatchSourceWardField();
+      document.getElementById('dispatchPriority').value = '一般';
+      toggleImmediateDispatch();
+      populateDispatchWorkItems();
+    }
+    function openModal(id) {
+      toggleSidebar(false);
+      document.getElementById(id).style.display = 'flex';
+      if (id === 'dispatchModal') initializeDispatchTime();
+    }
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    let activeCustomSelect = null;
+    let customSelectId = 0;
+    const nativeSelectValueDescriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    if (nativeSelectValueDescriptor && !HTMLSelectElement.prototype.customSelectValuePatched) {
+      Object.defineProperty(HTMLSelectElement.prototype, 'value', {
+        configurable: nativeSelectValueDescriptor.configurable,
+        enumerable: nativeSelectValueDescriptor.enumerable,
+        get() {
+          return nativeSelectValueDescriptor.get.call(this);
+        },
+        set(nextValue) {
+          nativeSelectValueDescriptor.set.call(this, nextValue);
+          if (this.dataset.customSelect === 'true') requestAnimationFrame(() => syncCustomSelect(this));
+        }
+      });
+      HTMLSelectElement.prototype.customSelectValuePatched = true;
+    }
+    function getCustomSelectLabel(select) {
+      const selectedOption = select.options[select.selectedIndex];
+      return selectedOption ? selectedOption.textContent : '';
+    }
+    function getCustomSelectFieldLabel(select) {
+      const field = select.closest('.field');
+      const label = field ? field.querySelector('label') : null;
+      return label ? label.textContent.trim() : '請選擇';
+    }
+    function syncCustomSelect(select) {
+      if (!select || select.dataset.customSelect !== 'true') return;
+      const button = document.querySelector(`[data-custom-select-button="${select.dataset.customSelectId}"]`);
+      if (!button) return;
+      const value = button.querySelector('.custom-select-value');
+      if (value) value.textContent = getCustomSelectLabel(select);
+      button.disabled = select.disabled;
+      button.setAttribute('aria-label', `${getCustomSelectFieldLabel(select)}：${getCustomSelectLabel(select)}`);
+    }
+    function syncCustomSelects() {
+      document.querySelectorAll('select[data-custom-select="true"]').forEach(syncCustomSelect);
+    }
+    function closeCustomSelect() {
+      if (!activeCustomSelect) return;
+      activeCustomSelect.button.setAttribute('aria-expanded', 'false');
+      activeCustomSelect.backdrop.remove();
+      activeCustomSelect.layer.remove();
+      activeCustomSelect = null;
+    }
+    function selectCustomOption(select, option) {
+      if (option.disabled) return;
+      select.value = option.value;
+      syncCustomSelect(select);
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      closeCustomSelect();
+    }
+    function positionCustomSelectLayer(button, layer) {
+      const rect = button.getBoundingClientRect();
+      const gap = 8;
+      const viewportPadding = 12;
+      const width = Math.min(rect.width, window.innerWidth - viewportPadding * 2);
+      const left = Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - width - viewportPadding);
+      const availableBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+      const availableAbove = rect.top - gap - viewportPadding;
+      const placeAbove = availableBelow < 220 && availableAbove > availableBelow;
+
+      layer.style.width = `${width}px`;
+      layer.style.left = `${left}px`;
+      if (placeAbove) {
+        layer.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+        layer.style.top = 'auto';
+      } else {
+        layer.style.top = `${rect.bottom + gap}px`;
+        layer.style.bottom = 'auto';
+      }
+    }
+    function openCustomSelect(select, button) {
+      if (select.disabled) return;
+      if (activeCustomSelect && activeCustomSelect.select === select) {
+        closeCustomSelect();
+        return;
+      }
+      closeCustomSelect();
+
+      const backdrop = document.createElement('div');
+      backdrop.className = 'custom-select-backdrop';
+      backdrop.addEventListener('click', closeCustomSelect);
+
+      const layer = document.createElement('div');
+      layer.className = 'custom-select-layer';
+      layer.setAttribute('role', 'presentation');
+
+      const title = document.createElement('div');
+      title.className = 'custom-select-title';
+      title.textContent = getCustomSelectFieldLabel(select);
+      layer.appendChild(title);
+
+      const optionList = document.createElement('div');
+      optionList.className = 'custom-select-options';
+      optionList.setAttribute('role', 'listbox');
+      optionList.setAttribute('aria-label', getCustomSelectFieldLabel(select));
+
+      Array.from(select.options).forEach(option => {
+        const optionButton = document.createElement('button');
+        optionButton.type = 'button';
+        optionButton.className = `custom-select-option${option.selected ? ' is-selected' : ''}`;
+        optionButton.textContent = option.textContent;
+        optionButton.disabled = option.disabled;
+        optionButton.setAttribute('role', 'option');
+        optionButton.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+        optionButton.addEventListener('click', () => selectCustomOption(select, option));
+        optionButton.addEventListener('keydown', event => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            closeCustomSelect();
+            button.focus();
+          }
+        });
+        optionList.appendChild(optionButton);
+      });
+
+      layer.appendChild(optionList);
+      document.body.append(backdrop, layer);
+      button.setAttribute('aria-expanded', 'true');
+      activeCustomSelect = { select, button, backdrop, layer };
+      positionCustomSelectLayer(button, layer);
+
+      const selectedButton = layer.querySelector('.custom-select-option.is-selected');
+      requestAnimationFrame(() => {
+        if (selectedButton) selectedButton.scrollIntoView({ block: 'nearest' });
+      });
+    }
+    function enhanceSelect(select) {
+      if (select.dataset.customSelect === 'true') return;
+      const wrapper = document.createElement('div');
+      const id = `custom-select-${customSelectId += 1}`;
+      wrapper.className = 'custom-select';
+      select.dataset.customSelect = 'true';
+      select.dataset.customSelectId = id;
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+      select.classList.add('custom-select-native');
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'custom-select-button';
+      button.dataset.customSelectButton = id;
+      button.setAttribute('aria-haspopup', 'listbox');
+      button.setAttribute('aria-expanded', 'false');
+      button.innerHTML = '<span class="custom-select-value"></span>';
+
+      select.parentNode.insertBefore(wrapper, select);
+      wrapper.appendChild(button);
+      wrapper.appendChild(select);
+
+      button.addEventListener('click', () => openCustomSelect(select, button));
+      button.addEventListener('keydown', event => {
+        if (['Enter', ' ', 'ArrowDown'].includes(event.key)) {
+          event.preventDefault();
+          openCustomSelect(select, button);
+        }
+      });
+      select.addEventListener('change', () => syncCustomSelect(select));
+
+      const observer = new MutationObserver(() => syncCustomSelect(select));
+      observer.observe(select, { childList: true, subtree: true, attributes: true });
+      syncCustomSelect(select);
+    }
+    function initializeCustomSelects() {
+      document.querySelectorAll('select').forEach(enhanceSelect);
+      syncCustomSelects();
+    }
+    function getFilterPanelToggleHost(panel) {
+      const section = panel.closest('section');
+      const previousElement = panel.previousElementSibling;
+      if (previousElement && previousElement.classList.contains('toolbar')) return previousElement;
+      return section ? section.querySelector('.page-title') || section.querySelector('.toolbar') || panel.parentElement : panel.parentElement;
+    }
+    function getFilterToggleActions(host, panel) {
+      let actions = host.querySelector(':scope > .filter-toggle-actions, :scope > .dispatch-history-toolbar-actions');
+      if (actions) return actions;
+
+      actions = document.createElement('div');
+      actions.className = 'filter-toggle-actions';
+      Array.from(host.children).forEach((child, index) => {
+        if (index > 0 && child !== panel) actions.appendChild(child);
+      });
+      host.appendChild(actions);
+      return actions;
+    }
+    function hideFilterPanel(panel) {
+      closeCustomSelect();
+      panel.classList.add('hidden');
+      const toggle = document.querySelector(`[data-filter-toggle="${panel.dataset.filterPanelId}"]`);
+      if (toggle) toggle.classList.remove('hidden');
+    }
+    function showFilterPanel(panel) {
+      panel.classList.remove('hidden');
+      const toggle = document.querySelector(`[data-filter-toggle="${panel.dataset.filterPanelId}"]`);
+      if (toggle) toggle.classList.add('hidden');
+    }
+    function initializeCollapsibleFilterPanels() {
+      document.querySelectorAll('.filter-grid, .clear-bed-filter-bar, .clean-bed-dashboard-actions').forEach((panel, index) => {
+        if (panel.dataset.filterPanelBound === 'true') return;
+        const panelId = panel.id || `filter-panel-${index + 1}`;
+        panel.dataset.filterPanelId = panelId;
+        panel.dataset.filterPanelBound = 'true';
+
+        let heading = panel.querySelector(':scope > .filter-panel-heading');
+        if (!heading) {
+          heading = document.createElement('div');
+          heading.className = 'filter-panel-heading';
+          heading.innerHTML = '<span class="filter-panel-title">篩選</span><button class="filter-panel-close" type="button" aria-label="隱藏篩選" title="隱藏篩選">x</button>';
+          panel.prepend(heading);
+        } else {
+          const title = heading.querySelector('.filter-panel-title');
+          if (title) title.textContent = '篩選';
+          const closeButton = heading.querySelector('.filter-panel-close');
+          if (closeButton) {
+            closeButton.setAttribute('aria-label', '隱藏篩選');
+            closeButton.setAttribute('title', '隱藏篩選');
+          }
+        }
+
+        const closeButton = heading.querySelector('.filter-panel-close');
+        if (closeButton) closeButton.onclick = () => hideFilterPanel(panel);
+
+        const host = getFilterPanelToggleHost(panel);
+        if (!host) return;
+        const actions = getFilterToggleActions(host, panel);
+        let toggle = document.querySelector(`[data-filter-toggle="${panelId}"]`);
+        if (!toggle) {
+          toggle = document.createElement('button');
+          toggle.className = 'btn light hidden';
+          toggle.type = 'button';
+          toggle.textContent = '篩選';
+          toggle.dataset.filterToggle = panelId;
+          actions.appendChild(toggle);
+        } else {
+          toggle.textContent = '篩選';
+          toggle.classList.add('hidden');
+          toggle.dataset.filterToggle = panelId;
+        }
+        toggle.onclick = () => showFilterPanel(panel);
+      });
+    }
+
+    initializeCustomSelects();
+    initializeCollapsibleFilterPanels();
+    bindResponsiveShellEvents();
+    window.addEventListener('resize', syncResponsiveShell);
+    window.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeCustomSelect();
+        toggleSidebar(false);
+      }
+    });
+    syncResponsiveShell();
+    refreshOperationalViews();
+  </script>
+</body>
+</html>
